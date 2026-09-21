@@ -1,0 +1,153 @@
+/* ---------------------------------------------------------------------------
+   Pillars design tokens
+   Extracted from design screens/ rather than invented. The rule that drives
+   this file: greys are never neutral. Every "grey" in the product is a
+   desaturated blue, so inactive states belong to the same family as active
+   ones instead of fighting them.
+--------------------------------------------------------------------------- */
+
+@theme {
+  /* --- type ------------------------------------------------------------- */
+  /* Helvetica Neue has no free web licence. Apple devices get the real face;
+     everything else falls back through a near-identical stack. */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica,
+    Arial, sans-serif;
+  /* The "mono" voice from onboarding: uppercase, letterspaced, very light. */
+  --font-label: 'Encode Sans Expanded', -apple-system, sans-serif;
+
+  /* --- blue ------------------------------------------------------------- */
+  --color-blue-50: #f3f9fd;
+  --color-blue-100: #e6f2fb;
+  --color-blue-200: #cfe6f6;
+  --color-blue-300: #a9d5ef;
+  --color-blue-400: #74c7fb; /* secondary / supporting UI */
+  --color-blue-500: #54a7de; /* primary */
+  --color-blue-600: #3d8cc0;
+  --color-blue-700: #2f6f9b;
+  --color-blue-800: #275a7d;
+  --color-blue-900: #1e4560;
+
+  /* --- blue-tinted neutrals --------------------------------------------- */
+  /* Replaces the #808080 in the current main view. */
+  --color-slate-50: #f7fafc;
+  --color-slate-100: #eef4f8;
+  --color-slate-200: #dfe9f0;
+  --color-slate-300: #c7d5e0;
+  --color-slate-400: #a3b4c2;
+  --color-slate-500: #7e909e;
+  --color-slate-600: #5e6e7b;
+  --color-slate-700: #465460;
+  --color-slate-800: #313c45;
+  --color-slate-900: #1b2228;
+
+  /* --- priority --------------------------------------------------------- */
+  --color-priority-high: #e5484d;
+  --color-priority-medium: #f5a524;
+  --color-priority-low: #30a46c;
+
+  /* --- radii ------------------------------------------------------------ */
+  --radius-task: 0.625rem;
+  --radius-pillar: 0.875rem;
+  --radius-column: 1.125rem;
+  --radius-modal: 1.5rem;
+  --radius-pill: 999px;
+
+  /* --- elevation -------------------------------------------------------- */
+  /* Wide, soft, low-opacity, tinted with the deep blue rather than black.
+     One scale. Elevation encodes state: resting < raised < lifted < modal. */
+  --shadow-rest: 0 1px 1px rgba(30, 69, 96, 0.03);
+  --shadow-raised: 0 1px 2px rgba(30, 69, 96, 0.04),
+    0 4px 12px rgba(30, 69, 96, 0.06);
+  --shadow-lift: 0 2px 6px rgba(30, 69, 96, 0.08),
+    0 12px 32px rgba(30, 69, 96, 0.14);
+  --shadow-modal: 0 4px 12px rgba(30, 69, 96, 0.08),
+    0 32px 72px rgba(30, 69, 96, 0.2);
+
+  /* --- motion ----------------------------------------------------------- */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+:root {
+  /* --- gradients -------------------------------------------------------- */
+  /* Not @theme tokens: Tailwind only generates utilities for known
+     namespaces, and these are used via var() in component classes. */
+
+  /* The page wash. White at the top, settling into pale blue. */
+  --gradient-page: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f6fbfd 42%,
+    #deeef9 100%
+  );
+
+  /* THE token. This is the pale-blue card surface onboarding uses, and its
+     absence is why the main view reads as a different product. */
+  --gradient-surface: linear-gradient(160deg, #e9f3fc 0%, #d9eaf6 100%);
+
+  /* Lighter variant for large surfaces (modals) that hold a lot of text. */
+  --gradient-surface-soft: linear-gradient(170deg, #ffffff 0%, #e9f3fc 100%);
+
+  /* Primary action fill. */
+  --gradient-primary: linear-gradient(180deg, #62b0e4 0%, #4d9ed4 100%);
+
+  /* Day columns: frosted white over the page wash, so a column reads as a
+     container without drawing a hard box around it. */
+  --surface-column: rgba(255, 255, 255, 0.55);
+  --surface-column-hover: rgba(255, 255, 255, 0.72);
+
+  /* Inactive pillar. Recedes. The single most important behavioural change
+     from the current design: no fill, no shadow, hairline only. */
+  --surface-inactive: rgba(255, 255, 255, 0.42);
+  --border-inactive: rgba(126, 144, 158, 0.28);
+
+  /* Hairlines. */
+  --border-hairline: rgba(126, 144, 158, 0.22);
+  --border-hairline-strong: rgba(126, 144, 158, 0.38);
+
+  /* --- springs ---------------------------------------------------------- */
+  /* Consumed by motion's `transition` prop, not CSS. Kept here so every
+     spring in the app traces back to one place. */
+  --spring-snappy: 420, 32; /* stiffness, damping */
+  --spring-gentle: 260, 28;
+}
+
+/* --------------------------------------------------------------------------
+   Base
+-------------------------------------------------------------------------- */
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--color-slate-900);
+  background: var(--gradient-page);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* The uppercase letterspaced label voice from onboarding. */
+.label-mono {
+  font-family: var(--font-label);
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Respect the system setting. Every spring in the app is gated on this. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
