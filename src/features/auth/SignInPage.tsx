@@ -1,0 +1,102 @@
+import { useState, type FormEvent } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import {
+  AuthButton,
+  AuthCard,
+  AuthError,
+  AuthLayout,
+  AuthNote,
+  AuthSubtitle,
+  AuthTitle,
+  TextField,
+} from './AuthUI'
+import { useAuthStore } from './useAuthStore'
+
+export function SignInPage() {
+  const signIn = useAuthStore((s) => s.signIn)
+  const offline = useAuthStore((s) => s.offline)
+  const navigate = useNavigate()
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault()
+    setError('')
+    setBusy(true)
+    try {
+      await signIn(email.trim(), password)
+      navigate('/', { replace: true })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not sign in.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <AuthLayout split>
+      <AuthCard>
+        <AuthTitle size="lg">Pillars</AuthTitle>
+        <AuthSubtitle>
+          A weekly planner for your 5-9 and everything in between.
+        </AuthSubtitle>
+
+        <form onSubmit={handleSubmit} className="mt-8 space-y-3.5">
+          <TextField
+            label="Email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <TextField
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <div className="pt-2">
+            <AuthButton type="submit" busy={busy} disabled={offline}>
+              Sign In
+            </AuthButton>
+          </div>
+        </form>
+
+        <AuthError>{error}</AuthError>
+
+        {offline && (
+          <AuthNote>
+            Supabase isn&apos;t configured yet, so accounts are unavailable.
+            Copy <code>.env.example</code> to <code>.env</code> and add your
+            keys — or{' '}
+            <Link to="/" className="underline underline-offset-2">
+              keep exploring with sample data
+            </Link>
+            .
+          </AuthNote>
+        )}
+
+        <div className="mt-6 flex items-center justify-between gap-4">
+          <Link
+            to="/sign-up"
+            className="text-[13px] text-slate-700 underline underline-offset-2 hover:text-blue-700"
+          >
+            Make an account
+          </Link>
+          <Link
+            to="/forgot-password"
+            className="text-[13px] text-slate-700 underline underline-offset-2 hover:text-blue-700"
+          >
+            Forgot password?
+          </Link>
+        </div>
+      </AuthCard>
+    </AuthLayout>
+  )
+}

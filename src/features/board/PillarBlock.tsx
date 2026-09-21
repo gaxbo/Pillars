@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { AnimatePresence, motion } from 'motion/react'
@@ -31,7 +32,7 @@ interface PillarBlockProps {
  * number, and repeating it in all seven day columns made it read as a daily
  * figure. It lives once, in the week summary.
  */
-export function PillarBlock({
+export const PillarBlock = memo(function PillarBlock({
   pillar,
   date,
   tasks,
@@ -140,4 +141,4 @@ export function PillarBlock({
       </SortableContext>
     </motion.div>
   )
-}
+})

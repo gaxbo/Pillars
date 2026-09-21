@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { motion } from 'motion/react'
@@ -16,7 +17,11 @@ interface TaskRowProps {
  * task was small plain text under a heavy grey bar, which inverted the
  * hierarchy — the pillar is the container, the task is the substance.
  */
-export function TaskRow({ task, onToggle, onOpen }: TaskRowProps) {
+export const TaskRow = memo(function TaskRow({
+  task,
+  onToggle,
+  onOpen,
+}: TaskRowProps) {
   const {
     attributes,
     listeners,
@@ -104,4 +109,4 @@ export function TaskRow({ task, onToggle, onOpen }: TaskRowProps) {
       )}
     </div>
   )
-}
+})

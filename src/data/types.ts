@@ -58,3 +58,14 @@ export interface WeekReport {
   goalsCompleted: number
   goalsTotal: number
 }
+
+export interface Profile {
+  archetypes: string[]
+  /** JS convention: 0 = Sunday. The UI renders Monday-first. */
+  planningWeekday: number
+  /** "HH:MM", 24-hour. */
+  planningTime: string
+  eodReminderTime: string
+  timezone: string
+  onboardedAt: string | null
+}

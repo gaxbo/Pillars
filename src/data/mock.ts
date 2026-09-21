@@ -1,10 +1,11 @@
 import { addDays, startOfWeek, toIso } from '@/lib/date'
 import type {
+  CreateGoalInput,
   CreateTaskInput,
   MoveTaskInput,
   PillarsRepository,
 } from './repository'
-import type { Goal, IsoDate, Pillar, Task } from './types'
+import type { Goal, IsoDate, Pillar, Profile, Task } from './types'
 
 const uid = () => Math.random().toString(36).slice(2, 10)
 
@@ -118,6 +119,16 @@ tasks = tasks.map((task) => {
 })
 
 let pillarList = [...pillars]
+let goalList = [...goals]
+
+let profile: Profile = {
+  archetypes: [],
+  planningWeekday: 0,
+  planningTime: '18:00',
+  eodReminderTime: '20:00',
+  timezone: Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'UTC',
+  onboardedAt: null,
+}
 
 /** Simulates network latency so loading states get exercised in development. */
 const settle = <T,>(value: T): Promise<T> =>
@@ -129,7 +140,7 @@ export const mockRepository: PillarsRepository = {
   },
 
   async listGoals(weekStart) {
-    return settle(goals.filter((g) => g.weekStart === weekStart))
+    return settle(goalList.filter((g) => g.weekStart === weekStart))
   },
 
   async listTasks(from, to) {
@@ -206,6 +217,29 @@ export const mockRepository: PillarsRepository = {
     })
     if (!updated) throw new Error(`No pillar ${id}`)
     return settle(updated)
+  },
+
+  async createGoal(input: CreateGoalInput) {
+    const goal: Goal = {
+      id: uid(),
+      pillarId: input.pillarId,
+      title: input.title,
+      description: input.description ?? '',
+      target: input.target,
+      unit: input.unit ?? '',
+      weekStart: input.weekStart,
+    }
+    goalList = [...goalList, goal]
+    return settle(goal)
+  },
+
+  async getProfile() {
+    return settle(profile)
+  },
+
+  async updateProfile(patch) {
+    profile = { ...profile, ...patch }
+    return settle(profile)
   },
 
   async archivePillar(id) {

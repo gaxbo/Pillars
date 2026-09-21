@@ -1,4 +1,4 @@
-import type { Goal, IsoDate, Pillar, Task } from './types'
+import type { Goal, IsoDate, Pillar, Profile, Task } from './types'
 
 export interface CreateTaskInput {
   pillarId: string
@@ -7,6 +7,15 @@ export interface CreateTaskInput {
   notes?: string | null
   scheduledDate: IsoDate
   priority: Task['priority']
+}
+
+export interface CreateGoalInput {
+  pillarId: string
+  title: string
+  description?: string
+  target: number
+  unit?: string
+  weekStart: IsoDate
 }
 
 export interface MoveTaskInput {
@@ -32,6 +41,10 @@ export interface PillarsRepository {
   moveTask(id: string, input: MoveTaskInput): Promise<Task>
 
   createPillar(name: string): Promise<Pillar>
+  createGoal(input: CreateGoalInput): Promise<Goal>
+
+  getProfile(): Promise<Profile | null>
+  updateProfile(patch: Partial<Profile>): Promise<Profile>
   renamePillar(id: string, name: string): Promise<Pillar>
   archivePillar(id: string): Promise<void>
 }

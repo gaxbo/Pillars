@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/features/auth/useAuthStore'
 import { cn } from '@/lib/cn'
 
 interface BoardHeaderProps {
@@ -39,12 +40,14 @@ export function BoardHeader({
         Today
       </button>
 
+      <AccountButton />
+
       {/* Opens the "goals expanded" slide-over. */}
       <button
         type="button"
         onClick={onOpenWeek}
         className={cn(
-          'label-mono ml-auto rounded-pill px-3.5 py-1.5 text-[10.5px] text-white',
+          'label-mono rounded-pill px-3.5 py-1.5 text-[10.5px] text-white',
           'transition-opacity duration-150 hover:opacity-90',
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500',
         )}
@@ -56,6 +59,30 @@ export function BoardHeader({
         This week
       </button>
     </header>
+  )
+}
+
+function AccountButton() {
+  const offline = useAuthStore((s) => s.offline)
+  const session = useAuthStore((s) => s.session)
+  const signOut = useAuthStore((s) => s.signOut)
+
+  // Nothing to sign out of when the app is running on sample data.
+  if (offline || !session) return <span className="ml-auto" />
+
+  return (
+    <button
+      type="button"
+      onClick={() => void signOut()}
+      className={cn(
+        'label-mono ml-auto rounded-pill px-3 py-1.5 text-[10.5px] text-slate-600',
+        'border border-slate-200 bg-white/60 transition-colors duration-150',
+        'hover:bg-white hover:text-slate-900',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500',
+      )}
+    >
+      Sign out
+    </button>
   )
 }
 

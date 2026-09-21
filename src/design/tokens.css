@@ -61,7 +61,7 @@
   --shadow-lift: 0 2px 6px rgba(30, 69, 96, 0.08),
     0 12px 32px rgba(30, 69, 96, 0.14);
   --shadow-modal: 0 4px 12px rgba(30, 69, 96, 0.08),
-    0 32px 72px rgba(30, 69, 96, 0.2);
+    0 24px 48px rgba(30, 69, 96, 0.18);
 
   /* --- motion ----------------------------------------------------------- */
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
@@ -126,11 +126,21 @@ body {
   margin: 0;
   font-family: var(--font-sans);
   color: var(--color-slate-900);
-  background: var(--gradient-page);
-  background-attachment: fixed;
+  background: #ffffff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+}
+
+/* The page wash lives on its own fixed layer. As a fixed-attachment body
+   background it forced a full-page repaint every time anything
+   composited above it — which is what made opening an overlay stutter. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--gradient-page);
 }
 
 /* The uppercase letterspaced label voice from onboarding. */
@@ -139,6 +149,47 @@ body {
   font-weight: 300;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+/* --------------------------------------------------------------------------
+   Entrance animations
+
+   These are CSS, not JS, on purpose. Anything that *blocks the UI* — a modal,
+   its backdrop — must not depend on a JS animation frame to become visible,
+   or a dropped animation leaves an invisible overlay swallowing every click.
+   `both` fill-mode means the end state sticks even if the animation is
+   shortened to nothing by the reduced-motion rule below.
+-------------------------------------------------------------------------- */
+
+@keyframes pillars-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pillars-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-fade-in {
+  animation: pillars-fade-in 140ms var(--ease-out-soft) both;
+  will-change: opacity;
+}
+
+.animate-pop-in {
+  animation: pillars-pop-in 240ms var(--ease-out-soft) both;
+  will-change: transform, opacity;
+  contain: layout paint;
 }
 
 /* Respect the system setting. Every spring in the app is gated on this. */
@@ -150,4 +201,90 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+@keyframes pillars-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-slide-in-right {
+  animation: pillars-slide-in-right 280ms var(--ease-out-soft) both;
+  will-change: transform, opacity;
+  contain: layout paint;
+}
+
+/* Goal bars grow with a plain transition rather than a JS animation: a bar
+   frozen at its start value would misreport progress as zero. */
+.goal-bar-fill {
+  transition: width 320ms var(--ease-out-soft);
+}
+
+/* --------------------------------------------------------------------------
+   Onboarding step transitions
+
+   Direction-aware: moving forward, the new step arrives from the right;
+   going back, from the left. Same reasoning as the overlays — CSS with
+   `both` fill-mode, so a step can never be left stranded at opacity 0.
+-------------------------------------------------------------------------- */
+
+@keyframes pillars-step-forward {
+  from {
+    opacity: 0;
+    transform: translate3d(28px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pillars-step-back {
+  from {
+    opacity: 0;
+    transform: translate3d(-28px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pillars-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-step-forward {
+  animation: pillars-step-forward 340ms var(--ease-out-soft) both;
+}
+
+.animate-step-back {
+  animation: pillars-step-back 340ms var(--ease-out-soft) both;
+}
+
+/* Title, then supporting copy, then the step's content — a short cascade so
+   the screen assembles rather than appearing all at once. */
+.animate-rise {
+  animation: pillars-rise 420ms var(--ease-out-soft) both;
+}
+
+.delay-1 {
+  animation-delay: 60ms;
+}
+
+.delay-2 {
+  animation-delay: 120ms;
 }

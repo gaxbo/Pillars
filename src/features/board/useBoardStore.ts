@@ -1,11 +1,11 @@
 import { create } from 'zustand'
-import { mockRepository } from '@/data/mock'
-import type { CreateTaskInput, PillarsRepository } from '@/data/repository'
+import { repository } from '@/data'
+import type { CreateTaskInput } from '@/data/repository'
 import type { Goal, GoalStats, IsoDate, Pillar, Task } from '@/data/types'
 import { addDays, startOfWeek, toIso, weekDays } from '@/lib/date'
 
-/** Swapped for the Supabase implementation in Phase 4; nothing else changes. */
-const repo: PillarsRepository = mockRepository
+/** Chosen in src/data/index.ts: Supabase when configured, mock otherwise. */
+const repo = repository
 
 /** A cell is one (day, pillar) intersection. This is the drop-target id. */
 export const cellId = (date: IsoDate, pillarId: string) => `${date}:${pillarId}`

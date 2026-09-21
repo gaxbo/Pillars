@@ -1,37 +1,41 @@
+import { memo } from 'react'
 import type { IsoDate, Pillar, Task } from '@/data/types'
 import { dayDateLabel, dayLabel, isPast, isToday } from '@/lib/date'
 import { cn } from '@/lib/cn'
 import { PillarBlock } from './PillarBlock'
-import { selectCellTasks } from './useBoardStore'
+import { cellId } from './useBoardStore'
 
 interface DayColumnProps {
   date: Date
   iso: IsoDate
   pillars: Pillar[]
-  tasks: Task[]
+  /** Pre-grouped in BoardPage so a cell never filters the whole task list. */
+  byCell: Map<string, Task[]>
+  dayStats: { total: number; done: number } | undefined
   onToggle: (id: string) => void
   onOpen: (id: string) => void
   onAdd: (date: IsoDate, pillarId: string) => void
 }
+
+const EMPTY: Task[] = []
 
 /**
  * A column is a real surface that fills its lane. In the original screens a
  * day was a heavy black rule with bars floating under it, so columns never
  * read as columns and content huddled in the top quarter of the page.
  */
-export function DayColumn({
+export const DayColumn = memo(function DayColumn({
   date,
   iso,
   pillars,
-  tasks,
+  byCell,
+  dayStats,
   onToggle,
   onOpen,
   onAdd,
 }: DayColumnProps) {
   const today = isToday(date)
   const past = isPast(date)
-  const dayTasks = tasks.filter((t) => t.scheduledDate === iso)
-  const done = dayTasks.filter((t) => t.status === 'done').length
 
   return (
     <section
@@ -60,9 +64,9 @@ export function DayColumn({
           {dayDateLabel(date)}
         </span>
         <span className="flex items-baseline gap-2">
-          {dayTasks.length > 0 && (
+          {dayStats && dayStats.total > 0 && (
             <span className="label-mono text-[9.5px] tabular-nums text-slate-400">
-              {done}/{dayTasks.length}
+              {dayStats.done}/{dayStats.total}
             </span>
           )}
           <span
@@ -82,7 +86,7 @@ export function DayColumn({
             key={pillar.id}
             pillar={pillar}
             date={iso}
-            tasks={selectCellTasks(tasks, iso, pillar.id)}
+            tasks={byCell.get(cellId(iso, pillar.id)) ?? EMPTY}
             onToggle={onToggle}
             onOpen={onOpen}
             onAdd={onAdd}
@@ -94,4 +98,4 @@ export function DayColumn({
       <div className="flex-1" aria-hidden="true" />
     </section>
   )
-}
+})
