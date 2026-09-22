@@ -91,6 +91,7 @@ async function currentUserId(): Promise<string> {
 }
 
 type ProfileRow = {
+  full_name: string
   archetypes: string[]
   planning_weekday: number
   planning_time: string
@@ -100,6 +101,7 @@ type ProfileRow = {
 }
 
 const toProfile = (r: ProfileRow): Profile => ({
+  fullName: r.full_name,
   archetypes: r.archetypes,
   planningWeekday: r.planning_weekday,
   // Postgres returns "18:00:00"; the app only cares about HH:MM.
@@ -129,7 +131,7 @@ const REVIEW_COLS =
   'week_start, tasks_done, tasks_open, goals_completed, goals_total'
 
 const PROFILE_COLS =
-  'archetypes, planning_weekday, planning_time, eod_reminder_time, timezone, onboarded_at'
+  'full_name, archetypes, planning_weekday, planning_time, eod_reminder_time, timezone, onboarded_at'
 
 const PILLAR_COLS = 'id, name, sort_order, archived_at'
 const GOAL_COLS = 'id, pillar_id, title, description, target, unit, week_start'
@@ -347,6 +349,7 @@ export const supabaseRepository: PillarsRepository = {
       await requireSupabase()
         .from('profiles')
         .update({
+          ...(patch.fullName !== undefined && { full_name: patch.fullName }),
           ...(patch.archetypes !== undefined && { archetypes: patch.archetypes }),
           ...(patch.planningWeekday !== undefined && {
             planning_weekday: patch.planningWeekday,

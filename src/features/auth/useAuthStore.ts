@@ -12,7 +12,11 @@ interface AuthState {
 
   init: () => () => void
   signIn: (email: string, password: string) => Promise<void>
-  signUp: (email: string, password: string) => Promise<{ needsVerification: boolean }>
+  signUp: (
+    email: string,
+    password: string,
+    fullName: string,
+  ) => Promise<{ needsVerification: boolean }>
   signOut: () => Promise<void>
   /** The address awaiting a code, so the verify screen survives a refresh. */
   pendingEmail: string
@@ -93,11 +97,16 @@ export const useAuthStore = create<AuthState>((set) => ({
     fail(error)
   },
 
-  async signUp(email, password) {
+  async signUp(email, password, fullName) {
     const { data, error } = await requireClient().auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: `${window.location.origin}/` },
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+        // Lands in auth.users.raw_user_meta_data, which the email templates
+        // can read as {{ .Data.full_name }}; a trigger mirrors it to profiles.
+        data: { full_name: fullName.trim() },
+      },
     })
     fail(error)
     // With email confirmation on, Supabase returns a user but no session.

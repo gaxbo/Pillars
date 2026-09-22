@@ -60,6 +60,8 @@ export interface WeekReport {
 }
 
 export interface Profile {
+  /** Collected at sign-up. Mirrored from auth metadata by a trigger. */
+  fullName: string
   archetypes: string[]
   /** JS convention: 0 = Sunday. The UI renders Monday-first. */
   planningWeekday: number

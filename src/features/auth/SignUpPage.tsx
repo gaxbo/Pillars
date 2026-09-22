@@ -19,6 +19,7 @@ export function SignUpPage() {
   const offline = useAuthStore((s) => s.offline)
   const navigate = useNavigate()
 
+  const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -30,6 +31,10 @@ export function SignUpPage() {
     setError('')
 
     // Checked here so the user finds out before a round trip.
+    if (fullName.trim().length < 2) {
+      setError('What should we call you?')
+      return
+    }
     if (password.length < MIN_PASSWORD) {
       setError(`Use at least ${MIN_PASSWORD} characters.`)
       return
@@ -42,7 +47,7 @@ export function SignUpPage() {
     setBusy(true)
     try {
       const address = email.trim()
-      const { needsVerification } = await signUp(address, password)
+      const { needsVerification } = await signUp(address, password, fullName)
       if (needsVerification) {
         setPendingEmail(address)
         navigate(`/verify?type=signup&email=${encodeURIComponent(address)}`, {
@@ -65,6 +70,14 @@ export function SignUpPage() {
         <AuthSubtitle>Make an account and build your first week.</AuthSubtitle>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-3.5">
+          <TextField
+            label="Your name"
+            type="text"
+            autoComplete="name"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+          />
           <TextField
             label="Email"
             type="email"

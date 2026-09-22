@@ -1,0 +1,286 @@
+/* ---------------------------------------------------------------------------
+   Sign-in showcase motion.
+
+   One loop that tells the product's whole story: two tasks get done, and the
+   week's goal fills up behind them. Every keyframe below shares the same
+   duration so they stay in step, and the container fades at the very end to
+   cover the reset — a goal bar visibly retreating would read as losing
+   progress.
+
+   CSS, not JS, for the same reason as everything else here: if the animation
+   never runs, the vignette still sits in a correct, readable state.
+--------------------------------------------------------------------------- */
+
+:root {
+  --sc-loop: 9s;
+}
+
+/* The whole vignette dips out briefly so the loop can restart unseen. */
+@keyframes sc-cycle {
+  0%,
+  86% {
+    opacity: 1;
+  }
+  93% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* A checkbox filling in. */
+@keyframes sc-check-a {
+  0%,
+  10% {
+    background-color: #ffffff;
+    border-color: var(--color-slate-300);
+  }
+  14%,
+  100% {
+    background-color: var(--color-blue-500);
+    border-color: var(--color-blue-500);
+  }
+}
+
+@keyframes sc-check-b {
+  0%,
+  40% {
+    background-color: #ffffff;
+    border-color: var(--color-slate-300);
+  }
+  44%,
+  100% {
+    background-color: var(--color-blue-500);
+    border-color: var(--color-blue-500);
+  }
+}
+
+@keyframes sc-tick-a {
+  0%,
+  10% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  16%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes sc-tick-b {
+  0%,
+  40% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  46%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* The strike-through is drawn, not toggled, so it reads as an action. */
+@keyframes sc-strike-a {
+  0%,
+  11% {
+    transform: scaleX(0);
+  }
+  18%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes sc-strike-b {
+  0%,
+  41% {
+    transform: scaleX(0);
+  }
+  48%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes sc-fade-a {
+  0%,
+  11% {
+    color: var(--color-slate-700);
+  }
+  18%,
+  100% {
+    color: var(--color-slate-400);
+  }
+}
+
+@keyframes sc-fade-b {
+  0%,
+  41% {
+    color: var(--color-slate-700);
+  }
+  48%,
+  100% {
+    color: var(--color-slate-400);
+  }
+}
+
+/* The goal bar answering back. */
+@keyframes sc-bar {
+  0%,
+  13% {
+    width: 33.33%;
+    background-color: var(--color-blue-500);
+  }
+  24%,
+  43% {
+    width: 66.66%;
+    background-color: var(--color-blue-500);
+  }
+  54%,
+  100% {
+    width: 100%;
+    background-color: var(--color-priority-low);
+  }
+}
+
+@keyframes sc-count-1 {
+  0%,
+  15% {
+    opacity: 1;
+  }
+  20%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes sc-count-2 {
+  0%,
+  15% {
+    opacity: 0;
+  }
+  20%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes sc-count-3 {
+  0%,
+  45% {
+    opacity: 0;
+  }
+  50%,
+  100% {
+    opacity: 1;
+  }
+}
+
+.sc-cycle {
+  animation: sc-cycle var(--sc-loop) linear infinite;
+}
+.sc-check-a {
+  animation: sc-check-a var(--sc-loop) var(--ease-out-soft) infinite;
+}
+.sc-check-b {
+  animation: sc-check-b var(--sc-loop) var(--ease-out-soft) infinite;
+}
+.sc-tick-a {
+  animation: sc-tick-a var(--sc-loop) var(--ease-out-soft) infinite;
+}
+.sc-tick-b {
+  animation: sc-tick-b var(--sc-loop) var(--ease-out-soft) infinite;
+}
+.sc-strike-a {
+  transform-origin: left center;
+  animation: sc-strike-a var(--sc-loop) var(--ease-out-soft) infinite;
+}
+.sc-strike-b {
+  transform-origin: left center;
+  animation: sc-strike-b var(--sc-loop) var(--ease-out-soft) infinite;
+}
+.sc-fade-a {
+  animation: sc-fade-a var(--sc-loop) var(--ease-out-soft) infinite;
+}
+.sc-fade-b {
+  animation: sc-fade-b var(--sc-loop) var(--ease-out-soft) infinite;
+}
+.sc-bar {
+  animation: sc-bar var(--sc-loop) var(--ease-out-soft) infinite;
+}
+.sc-count-1 {
+  animation: sc-count-1 var(--sc-loop) linear infinite;
+}
+.sc-count-2 {
+  animation: sc-count-2 var(--sc-loop) linear infinite;
+}
+.sc-count-3 {
+  animation: sc-count-3 var(--sc-loop) linear infinite;
+}
+
+/*
+  Reduced motion: hold the finished state rather than looping. The global rule
+  in tokens.css already collapses the duration; this pins the end values so
+  the vignette reads as complete instead of frozen at the start.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .sc-bar {
+    width: 100% !important;
+    background-color: var(--color-priority-low) !important;
+  }
+  .sc-count-1,
+  .sc-count-2 {
+    opacity: 0 !important;
+  }
+  .sc-count-3 {
+    opacity: 1 !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Tilt and drift
+
+   A resting tilt plus a slow rise and fall. The two cards run on different
+   periods (7.5s and 9.5s) and opposite lean, so they never bob in lockstep —
+   which is what makes it read as buoyant rather than mechanical.
+
+   Rotation lives inside the keyframes because transform is a single property:
+   a separate tilt class would be overwritten by the float.
+--------------------------------------------------------------------------- */
+
+@keyframes sc-float-a {
+  0%,
+  100% {
+    transform: rotate(-1.7deg) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: rotate(-1.1deg) translate3d(0, -9px, 0);
+  }
+}
+
+@keyframes sc-float-b {
+  0%,
+  100% {
+    transform: rotate(1.5deg) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: rotate(2.1deg) translate3d(0, -6px, 0);
+  }
+}
+
+.sc-float-a {
+  animation: sc-float-a 7.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+.sc-float-b {
+  animation: sc-float-b 9.5s ease-in-out infinite;
+  will-change: transform;
+}

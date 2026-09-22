@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
+import { AuthShowcase } from './AuthShowcase'
 
 /**
  * Sign-in uses the split layout from the design: a blue gradient panel on the
@@ -23,14 +24,7 @@ export function AuthLayout({
 
   return (
     <div className="flex min-h-full flex-col lg:flex-row">
-      <div
-        className="hidden lg:block lg:w-1/2"
-        aria-hidden="true"
-        style={{
-          background:
-            'linear-gradient(180deg, #74c7fb 0%, #a9d5ef 45%, #eaf5fd 100%)',
-        }}
-      />
+      <AuthShowcase />
       <div className="flex flex-1 items-center justify-center bg-white p-6">
         {children}
       </div>

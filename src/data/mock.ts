@@ -161,6 +161,7 @@ let goalList = [...goals]
 const weekReviews = new Map<IsoDate, WeekReport>()
 
 let profile: Profile = {
+  fullName: 'Sample account',
   archetypes: [],
   planningWeekday: 0,
   planningTime: '18:00',
