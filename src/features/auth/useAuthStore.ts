@@ -14,6 +14,12 @@ interface AuthState {
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string) => Promise<{ needsVerification: boolean }>
   signOut: () => Promise<void>
+  /** The address awaiting a code, so the verify screen survives a refresh. */
+  pendingEmail: string
+  setPendingEmail: (email: string) => void
+
+  verifyCode: (email: string, token: string, type: 'signup' | 'email') => Promise<void>
+  resendCode: (email: string, type: 'signup' | 'email') => Promise<void>
   sendReset: (email: string) => Promise<void>
   updatePassword: (password: string) => Promise<void>
 }
@@ -28,6 +34,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   loading: true,
   offline: !isSupabaseConfigured,
+  pendingEmail: readPendingEmail(),
 
   init() {
     if (!supabase) {
@@ -44,6 +51,41 @@ export const useAuthStore = create<AuthState>((set) => ({
     })
 
     return () => data.subscription.unsubscribe()
+  },
+
+  setPendingEmail(email) {
+    writePendingEmail(email)
+    set({ pendingEmail: email })
+  },
+
+  /**
+   * Supabase sends either a link or a 6-digit code depending on the email
+   * template; this verifies the code path. `signup` confirms a new account,
+   * `email` confirms a sign-in challenge.
+   */
+  async verifyCode(email, token, type) {
+    const { error } = await requireClient().auth.verifyOtp({
+      email,
+      token: token.trim(),
+      type,
+    })
+    fail(error)
+    writePendingEmail('')
+    set({ pendingEmail: '' })
+  },
+
+  async resendCode(email, type) {
+    const client = requireClient()
+    // resend() only covers signup and change flows; a fresh sign-in
+    // challenge is issued by requesting a new one.
+    const { error } =
+      type === 'signup'
+        ? await client.auth.resend({ type: 'signup', email })
+        : await client.auth.signInWithOtp({
+            email,
+            options: { shouldCreateUser: false },
+          })
+    fail(error)
   },
 
   async signIn(email, password) {
@@ -80,6 +122,26 @@ export const useAuthStore = create<AuthState>((set) => ({
     fail(error)
   },
 }))
+
+const PENDING_KEY = 'pillars.auth.pendingEmail'
+
+/** Storage throws in private mode; an empty address just means retyping it. */
+function readPendingEmail(): string {
+  try {
+    return window.localStorage.getItem(PENDING_KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+function writePendingEmail(email: string) {
+  try {
+    if (email) window.localStorage.setItem(PENDING_KEY, email)
+    else window.localStorage.removeItem(PENDING_KEY)
+  } catch {
+    // Non-fatal.
+  }
+}
 
 function requireClient() {
   if (!supabase) throw new Error('Supabase is not configured.')

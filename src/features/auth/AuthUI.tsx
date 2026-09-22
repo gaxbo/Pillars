@@ -165,3 +165,90 @@ export function AuthNote({ children }: { children: ReactNode }) {
     </p>
   )
 }
+
+/**
+ * The bare centred states from the design ("All set!", "Reset link sent!") —
+ * no card, just the page wash behind a headline.
+ */
+export function CenteredState({
+  title,
+  subtitle,
+  icon,
+  children,
+}: {
+  title: string
+  subtitle?: ReactNode
+  icon?: ReactNode
+  children?: ReactNode
+}) {
+  return (
+    <div className="flex min-h-full flex-col items-center justify-center px-6 text-center">
+      {icon && <div className="animate-rise mb-4">{icon}</div>}
+      <h1 className="animate-rise delay-1 text-[40px] font-bold leading-none tracking-tight text-slate-900">
+        {title}
+      </h1>
+      {subtitle && (
+        <p className="animate-rise delay-2 mt-4 text-[17px] text-slate-700">
+          {subtitle}
+        </p>
+      )}
+      {children && <div className="mt-8">{children}</div>}
+    </div>
+  )
+}
+
+export function CheckMark() {
+  return (
+    <svg viewBox="0 0 48 48" className="size-14 text-slate-900" aria-hidden="true">
+      <path
+        d="M10 25l10 10 18-22"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="4.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+/**
+ * Six-digit code entry. One input rather than six boxes: paste works, screen
+ * readers announce one field, and mobile keyboards behave.
+ */
+export function CodeInput({
+  value,
+  onChange,
+  onComplete,
+  ...props
+}: {
+  value: string
+  onChange: (value: string) => void
+  onComplete?: (value: string) => void
+  ref?: React.Ref<HTMLInputElement>
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'>) {
+  return (
+    <input
+      {...props}
+      value={value}
+      onChange={(e) => {
+        const next = e.target.value.replace(/\D/g, '').slice(0, 6)
+        onChange(next)
+        if (next.length === 6) onComplete?.(next)
+      }}
+      inputMode="numeric"
+      autoComplete="one-time-code"
+      pattern="[0-9]*"
+      maxLength={6}
+      placeholder="000000"
+      aria-label="Six-digit code"
+      className={cn(
+        'w-full rounded-pill border border-white/80 bg-white px-6 py-4',
+        'text-center text-[26px] font-semibold tracking-[0.5em] text-slate-900',
+        'placeholder:font-normal placeholder:tracking-[0.5em] placeholder:text-slate-300',
+        'shadow-[var(--shadow-rest)] outline-none transition-shadow duration-150',
+        'focus-visible:border-blue-400 focus-visible:ring-2 focus-visible:ring-blue-400/30',
+      )}
+    />
+  )
+}

@@ -15,6 +15,7 @@ const MIN_PASSWORD = 8
 
 export function SignUpPage() {
   const signUp = useAuthStore((s) => s.signUp)
+  const setPendingEmail = useAuthStore((s) => s.setPendingEmail)
   const offline = useAuthStore((s) => s.offline)
   const navigate = useNavigate()
 
@@ -40,8 +41,16 @@ export function SignUpPage() {
 
     setBusy(true)
     try {
-      const { needsVerification } = await signUp(email.trim(), password)
-      navigate(needsVerification ? '/verify' : '/', { replace: true })
+      const address = email.trim()
+      const { needsVerification } = await signUp(address, password)
+      if (needsVerification) {
+        setPendingEmail(address)
+        navigate(`/verify?type=signup&email=${encodeURIComponent(address)}`, {
+          replace: true,
+        })
+      } else {
+        navigate('/welcome', { replace: true })
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not create an account.')
     } finally {

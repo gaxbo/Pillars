@@ -15,6 +15,7 @@ import { useAuthStore } from './useAuthStore'
 export function SignInPage() {
   const signIn = useAuthStore((s) => s.signIn)
   const offline = useAuthStore((s) => s.offline)
+  const setPendingEmail = useAuthStore((s) => s.setPendingEmail)
   const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
@@ -26,11 +27,21 @@ export function SignInPage() {
     e.preventDefault()
     setError('')
     setBusy(true)
+    const address = email.trim()
     try {
-      await signIn(email.trim(), password)
+      await signIn(address, password)
       navigate('/', { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not sign in.')
+      const message = err instanceof Error ? err.message : 'Could not sign in.'
+
+      // An unconfirmed account is not a failure, it is an unfinished
+      // sign-up — send them to the code screen instead of a dead end.
+      if (/not confirmed|not verified/i.test(message)) {
+        setPendingEmail(address)
+        navigate(`/verify?type=signup&email=${encodeURIComponent(address)}`)
+        return
+      }
+      setError(message)
     } finally {
       setBusy(false)
     }

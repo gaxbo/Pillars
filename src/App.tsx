@@ -11,7 +11,9 @@ import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage'
 import { ResetPasswordPage } from '@/features/auth/ResetPasswordPage'
 import { SignInPage } from '@/features/auth/SignInPage'
 import { SignUpPage } from '@/features/auth/SignUpPage'
-import { VerifyPage } from '@/features/auth/VerifyPage'
+import { ResetLinkSentPage } from '@/features/auth/ResetLinkSentPage'
+import { VerifyCodePage } from '@/features/auth/VerifyCodePage'
+import { WelcomePage } from '@/features/auth/WelcomePage'
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
 import { RequireOnboarded } from '@/features/onboarding/RequireOnboarded'
 import { WeeklyReviewPage } from '@/features/weekly/WeeklyReviewPage'
@@ -27,7 +29,9 @@ export default function App() {
       <Routes>
         <Route path="/sign-in" element={<SignInPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
-        <Route path="/verify" element={<VerifyPage />} />
+        <Route path="/verify" element={<VerifyCodePage />} />
+        <Route path="/welcome" element={<WelcomePage />} />
+        <Route path="/reset-link-sent" element={<ResetLinkSentPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route

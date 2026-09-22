@@ -50,6 +50,31 @@ Otherwise the end-of-day nudge appears past `eod_reminder_time` (default
 appears once the planning slot chosen in onboarding has passed and last week
 has not been reviewed. `preview` is stripped from production builds.
 
+## The auth flows
+
+```
+sign up  -> /verify   (6-digit code) -> /welcome -> /onboarding
+sign in  -> board
+         -> /verify   when the address was never confirmed
+forgot   -> /reset-link-sent -> (email link) -> /reset-password -> board
+```
+
+| Route | Screen |
+| --- | --- |
+| `/sign-in` | Split layout, email + password |
+| `/sign-up` | Email, password, confirm |
+| `/verify` | "Check your email" — 6-digit code, resend on a 30s cooldown |
+| `/welcome` | "All set! Logging you in." then redirects |
+| `/forgot-password` | "Enter your email" |
+| `/reset-link-sent` | "Reset link sent!" with resend |
+| `/reset-password` | Set a new password; detects an expired link |
+
+**The code screen needs a Supabase email template change.** Supabase sends a
+magic *link* by default. For the 6-digit code the design calls for, edit
+**Authentication → Email Templates → Confirm signup** and use `{{ .Token }}`
+in place of `{{ .ConfirmationURL }}`. Without that the code screen has no code
+to accept.
+
 ## Where things are
 
 ```
