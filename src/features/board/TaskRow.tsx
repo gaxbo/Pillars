@@ -38,7 +38,7 @@ export const TaskRow = memo(function TaskRow({
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        'group relative flex items-center gap-2.5 rounded-task py-1.5 pl-1.5 pr-2',
+        'group relative flex items-center gap-2.5 rounded-task py-2 pl-1.5 pr-2 md:py-1.5',
         'transition-colors duration-150',
         'hover:bg-white/60',
         isDragging && 'opacity-40',
@@ -50,7 +50,9 @@ export const TaskRow = memo(function TaskRow({
         aria-label={done ? `Mark "${task.title}" not done` : `Mark "${task.title}" done`}
         aria-pressed={done}
         className={cn(
-          'relative grid size-[18px] shrink-0 place-items-center rounded-full',
+          'relative grid size-[22px] shrink-0 place-items-center rounded-full md:size-[18px]',
+          // A fingertip-sized hit area around a small circle, on phones only.
+          'before:absolute before:-inset-2 md:before:hidden',
           'transition-colors duration-150',
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500',
           done
@@ -64,7 +66,7 @@ export const TaskRow = memo(function TaskRow({
             animate={{ scale: 1, opacity: 1 }}
             transition={ease.fast}
             viewBox="0 0 12 12"
-            className="size-[11px]"
+            className="size-[13px] md:size-[11px]"
             aria-hidden="true"
           >
             <path
@@ -79,14 +81,16 @@ export const TaskRow = memo(function TaskRow({
         )}
       </button>
 
-      {/* The drag surface. A 6px activation distance keeps plain clicks working. */}
+      {/* The drag surface. A 6px activation distance keeps plain clicks
+          working; on touch it's a long press, so the text must not select. */}
       <button
         type="button"
         onClick={() => onOpen(task.id)}
         {...attributes}
         {...listeners}
         className={cn(
-          'flex-1 cursor-grab text-left text-[13.5px] leading-snug active:cursor-grabbing',
+          'flex-1 cursor-grab select-none text-left text-[15px] leading-snug active:cursor-grabbing md:text-[13.5px]',
+          '[-webkit-touch-callout:none]',
           'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 focus-visible:rounded-sm',
           done ? 'text-slate-400 line-through' : 'text-slate-800',
         )}

@@ -57,7 +57,7 @@ export const PillarBlock = memo(function PillarBlock({
         aria-label={`Add a task to ${pillar.name}`}
         className={cn(
           'group/pillar flex w-full items-center justify-between gap-2 rounded-pillar',
-          'border border-dashed px-2.5 py-1.5 text-left',
+          'border border-dashed px-2.5 py-3 text-left md:py-1.5',
           'transition-colors duration-200',
           'hover:border-blue-300 hover:bg-white/70',
           'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-500',
@@ -102,8 +102,11 @@ export const PillarBlock = memo(function PillarBlock({
           type="button"
           onClick={() => onAdd(date, pillar.id)}
           aria-label={`Add a task to ${pillar.name}`}
+          // Finger-sized on a phone; the negative margin keeps the header's
+          // height from growing with it.
           className={cn(
-            'grid size-4 shrink-0 place-items-center rounded-full text-[13px] leading-none',
+            'grid size-8 -my-2 -mr-1.5 shrink-0 place-items-center rounded-full text-[17px] leading-none',
+            'md:m-0 md:size-4 md:text-[13px]',
             'text-blue-600/70 transition-all duration-150',
             'hover:bg-white/70 hover:text-blue-600',
             'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-500',

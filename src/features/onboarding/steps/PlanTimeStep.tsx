@@ -190,7 +190,8 @@ function Select({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       className={cn(
-        'rounded-pill border border-blue-100 px-5 py-2 text-[14px] text-slate-800',
+        // 16px on a phone: iOS zooms the page into any smaller field.
+        'rounded-pill border border-blue-100 px-5 py-2 text-[16px] text-slate-800 md:text-[14px]',
         'outline-none transition-colors duration-150 hover:border-blue-300',
         'focus-visible:border-blue-400 focus-visible:ring-2 focus-visible:ring-blue-400/30',
       )}

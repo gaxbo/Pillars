@@ -83,7 +83,8 @@ export function TextField({
       placeholder={label}
       {...props}
       className={cn(
-        'w-full rounded-pill border border-white/80 bg-white px-5 py-3.5 text-[15px]',
+        // 16px on a phone: iOS zooms the page into any smaller field.
+        'w-full rounded-pill border border-white/80 bg-white px-5 py-3.5 text-[16px] md:text-[15px]',
         'text-slate-900 placeholder:text-slate-400',
         'shadow-[var(--shadow-rest)] outline-none transition-shadow duration-150',
         'focus-visible:border-blue-400 focus-visible:ring-2 focus-visible:ring-blue-400/30',

@@ -96,6 +96,11 @@
   --surface-column: rgba(255, 255, 255, 0.55);
   --surface-column-hover: rgba(255, 255, 255, 0.72);
 
+  /* The phone's sticky day strip. Near-opaque rather than blurred: it sits
+     where the page wash is still white, and a backdrop-filter would repaint
+     everything scrolling under it. */
+  --surface-strip: rgba(255, 255, 255, 0.94);
+
   /* Inactive pillar. Recedes. The single most important behavioural change
      from the current design: no fill, no shadow, hairline only. */
   --surface-inactive: rgba(255, 255, 255, 0.42);

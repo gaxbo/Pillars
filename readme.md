@@ -114,6 +114,18 @@ a JS animation frame becomes an invisible click-swallowing overlay if that
 frame never runs. Keyframes with `animation-fill-mode: both` land in the right
 final state regardless — including under `prefers-reduced-motion`.
 
+**A phone shows one day.** Below 48rem (Tailwind's `md`) the board is the
+selected day plus a sticky strip of the week's days, instead of seven
+full-width columns stacked into a two-screen scroll. The store's `anchor` is
+that selected day; wider screens only use it to pick the week. Each day in the
+strip is a drop target, so a task can still move to a day that isn't on
+screen. On touch a drag starts with a press and hold so a swipe still scrolls,
+the lifted card hangs below the finger so it doesn't hide the strip, and drops
+are hit-tested by the finger rather than the card's corners.
+
+**Inputs are 16px on a phone.** iOS zooms the page into any field smaller than
+that on focus. Inputs drop back to their designed size from `md` up.
+
 **Pillar matching is keyword scoring, not an LLM call.** `match.ts` scores the
 six starting templates against the brain-dump text plus the chosen archetypes.
 It is instant, free, works offline, and the next screen lets the user edit
@@ -128,15 +140,16 @@ and a lost snooze should mean one extra nudge, not a broken board.
 ## Status
 
 Built: design tokens and primitives; the main view (week grid, pillar
-activation, drag and drop across days and pillars); the "This Week" slide-over;
-the add/edit task dialog; auth with the Supabase schema behind it; the
-six-step onboarding flow; and both reminder flows.
+activation, drag and drop across days and pillars) and its single-day phone
+layout; the "This Week" slide-over; the add/edit task dialog; auth with the
+Supabase schema behind it; the six-step onboarding flow; and both reminder
+flows.
 
 Goal progress is **derived, never stored**. `selectGoalStats` counts tasks
 linked to a goal to get "# planned, # done", so the numbers cannot drift out of
 sync with the board: planning a task is what makes it planned.
 
-Next: the responsive mobile pass, and connecting a real Supabase project. One known rough edge: the task dialog still drops a single frame
+Next: connecting a real Supabase project. One known rough edge: the task dialog still drops a single frame
 the first time it opens per page load.
 
 Fonts: Helvetica Neue has no free web licence, so Apple devices get the real

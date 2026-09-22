@@ -35,9 +35,15 @@
       measured). Everything after is ~7ms. Cause is first-paint of that
       subtree; parking it off-screen and pre-seeding its content got it from
       ~56ms down, but not to zero. Deferred deliberately.
-- [ ] **Responsive mobile pass.** Below `768px` the 7-column grid stacks into
-      seven full-width columns. It works and doesn't overflow, but the intended
-      design is a single day with a day switcher.
+- [ ] **Swipe between days on a phone.** The single-day view switches days
+      from the strip only. A horizontal swipe on the day itself would be the
+      expected gesture, but it has to stay out of the way of a task drag.
+- [ ] **Test the phone view on a real iPhone.** Verified in Chrome's touch
+      emulation (tap, press-and-hold drag, scrolling, sticky strip), not in iOS
+      Safari itself — long-press text selection is the thing most likely to
+      differ.
+- [ ] **Tablet portrait (768–1279px)** still gets the 3-column grid, so the
+      week wraps as 3 / 3 / 1. Works, but it's the next layout worth a look.
 
 ## Housekeeping
 

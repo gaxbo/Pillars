@@ -15,6 +15,7 @@ interface DayColumnProps {
   onToggle: (id: string) => void
   onOpen: (id: string) => void
   onAdd: (date: IsoDate, pillarId: string) => void
+  className?: string
 }
 
 const EMPTY: Task[] = []
@@ -33,6 +34,7 @@ export const DayColumn = memo(function DayColumn({
   onToggle,
   onOpen,
   onAdd,
+  className,
 }: DayColumnProps) {
   const today = isToday(date)
   const past = isPast(date)
@@ -45,6 +47,7 @@ export const DayColumn = memo(function DayColumn({
         'transition-colors duration-200',
         today && 'ring-1 ring-blue-300/70',
         past && !today && 'opacity-[0.7]',
+        className,
       )}
       style={{
         background: today ? 'var(--surface-column-hover)' : 'var(--surface-column)',

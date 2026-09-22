@@ -63,7 +63,8 @@ export function GoalEditor({
                   placeholder="Example goal written here"
                   aria-label={`Goal for ${pillar.name}`}
                   className={cn(
-                    'min-w-0 flex-1 rounded-pill border border-slate-200 bg-white px-5 py-3 text-[15px]',
+                    // 16px on a phone: iOS zooms the page into any smaller field.
+                    'min-w-0 flex-1 rounded-pill border border-slate-200 bg-white px-5 py-3 text-[16px] md:text-[15px]',
                     'text-slate-900 placeholder:italic placeholder:text-slate-400',
                     'shadow-[var(--shadow-rest)] outline-none',
                     'focus-visible:border-blue-400 focus-visible:ring-2 focus-visible:ring-blue-400/30',

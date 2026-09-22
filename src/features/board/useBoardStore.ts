@@ -15,7 +15,15 @@ export function parseCellId(id: string): { date: IsoDate; pillarId: string } {
   return { date: id.slice(0, at), pillarId: id.slice(at + 1) }
 }
 
+/** A whole day as a drop target — the phone's day strip. */
+export const dayDropId = (date: IsoDate) => `day:${date}`
+
+export function parseDayDropId(id: string): IsoDate | null {
+  return id.startsWith('day:') ? id.slice('day:'.length) : null
+}
+
 interface BoardState {
+  /** The selected day. A phone shows only this day; wider screens show its week. */
   anchor: Date
   pillars: Pillar[]
   goals: Goal[]
@@ -30,6 +38,7 @@ interface BoardState {
   load: () => Promise<void>
   shiftWeek: (delta: number) => void
   goToToday: () => void
+  selectDay: (date: Date) => void
   setPanelOpen: (open: boolean) => void
 
   toggleTask: (id: string) => void
@@ -68,13 +77,21 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   },
 
   shiftWeek(delta) {
-    set({ anchor: addDays(startOfWeek(get().anchor), delta * 7) })
+    // Keeps the weekday, so a phone showing Tuesday lands on next Tuesday.
+    set({ anchor: addDays(get().anchor, delta * 7) })
     void get().load()
   },
 
   goToToday() {
     set({ anchor: new Date() })
     void get().load()
+  },
+
+  selectDay(date) {
+    const sameWeek =
+      toIso(startOfWeek(date)) === toIso(startOfWeek(get().anchor))
+    set({ anchor: date })
+    if (!sameWeek) void get().load()
   },
 
   toggleTask(id) {

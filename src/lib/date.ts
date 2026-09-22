@@ -68,16 +68,18 @@ export function dayDateLabel(date: Date): string {
 
 /**
  * The header title. A week can straddle a month boundary, in which case the
- * design's single "September 2026" would be wrong — show both.
+ * design's single "September 2026" would be wrong — show both. `short`
+ * abbreviates the month ("Sep 2026") for a phone's header row.
  */
-export function weekTitle(days: Date[]): string {
+export function weekTitle(days: Date[], short = false): string {
   const first = days[0]
   const last = days[days.length - 1]
   const sameMonth = first.getMonth() === last.getMonth()
   const sameYear = first.getFullYear() === last.getFullYear()
 
   if (sameMonth && sameYear) {
-    return `${MONTH_LABELS[first.getMonth()]} ${first.getFullYear()}`
+    const month = short ? MONTH_SHORT : MONTH_LABELS
+    return `${month[first.getMonth()]} ${first.getFullYear()}`
   }
   if (sameYear) {
     return `${MONTH_SHORT[first.getMonth()]}–${MONTH_SHORT[last.getMonth()]} ${first.getFullYear()}`
