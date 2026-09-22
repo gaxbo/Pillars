@@ -13,8 +13,13 @@ import {
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import type { IsoDate, Task } from '@/data/types'
 import { toIso, weekTitle } from '@/lib/date'
+import { useNavigate } from 'react-router-dom'
 import { BoardHeader } from './BoardHeader'
 import { DayColumn } from './DayColumn'
+import { EodToast } from '@/features/eod/EodToast'
+import { EodTriage } from '@/features/eod/EodTriage'
+import { snoozeEod } from '@/features/reminders/reminders'
+import { useReminders } from '@/features/reminders/useReminders'
 import { TaskDialog, type DialogTarget } from './TaskDialog'
 import { WeekPanel } from './WeekPanel'
 import { cellId, parseCellId, selectWeek, useBoardStore } from './useBoardStore'
@@ -35,9 +40,22 @@ export function BoardPage() {
   const setPanelOpen = useBoardStore((s) => s.setPanelOpen)
   const toggleTask = useBoardStore((s) => s.toggleTask)
   const placeTask = useBoardStore((s) => s.placeTask)
+  const editTask = useBoardStore((s) => s.editTask)
+  const removeTask = useBoardStore((s) => s.removeTask)
 
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dialog, setDialog] = useState<DialogTarget | null>(null)
+  const [triageOpen, setTriageOpen] = useState(false)
+  const [eodHidden, setEodHidden] = useState(false)
+
+  const navigate = useNavigate()
+  const { eod, weeklyDue } = useReminders(tasks, !loading)
+
+  // The weekly report card is a destination, not a banner — the design
+  // sends people straight there, and that page carries its own way out.
+  useEffect(() => {
+    if (weeklyDue) navigate('/weekly-review')
+  }, [weeklyDue, navigate])
 
   useEffect(() => {
     void load()
@@ -151,6 +169,30 @@ export function BoardPage() {
         onClose={() => setDialog(null)}
         pillars={pillars}
         goals={goals}
+      />
+
+      {eod.due && !eodHidden && !triageOpen && (
+        <EodToast
+          count={eod.tasks.length}
+          onOpen={() => setTriageOpen(true)}
+          onLater={() => {
+            snoozeEod()
+            setEodHidden(true)
+          }}
+        />
+      )}
+
+      <EodTriage
+        open={triageOpen}
+        tasks={eod.tasks}
+        pillars={pillars}
+        onDone={toggleTask}
+        onTomorrow={(id, date) => editTask(id, { scheduledDate: date })}
+        onDelete={removeTask}
+        onClose={() => {
+          setTriageOpen(false)
+          setEodHidden(true)
+        }}
       />
 
       <main className="min-h-0 flex-1 px-6 pb-8 sm:px-8">

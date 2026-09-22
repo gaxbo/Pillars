@@ -5,7 +5,7 @@ import type {
   MoveTaskInput,
   PillarsRepository,
 } from './repository'
-import type { Goal, Pillar, Profile, Task } from './types'
+import type { Goal, Pillar, Profile, Task, WeekReport } from './types'
 
 /**
  * Rows come back snake_case; the app speaks camelCase. Mapping happens here so
@@ -108,6 +108,25 @@ const toProfile = (r: ProfileRow): Profile => ({
   timezone: r.timezone,
   onboardedAt: r.onboarded_at,
 })
+
+type ReviewRow = {
+  week_start: string
+  tasks_done: number
+  tasks_open: number
+  goals_completed: number
+  goals_total: number
+}
+
+const toReview = (r: ReviewRow): WeekReport => ({
+  weekStart: r.week_start,
+  tasksDone: r.tasks_done,
+  tasksOpen: r.tasks_open,
+  goalsCompleted: r.goals_completed,
+  goalsTotal: r.goals_total,
+})
+
+const REVIEW_COLS =
+  'week_start, tasks_done, tasks_open, goals_completed, goals_total'
 
 const PROFILE_COLS =
   'archetypes, planning_weekday, planning_time, eod_reminder_time, timezone, onboarded_at'
@@ -281,6 +300,34 @@ export const supabaseRepository: PillarsRepository = {
         .single(),
     )
     return toGoal(row)
+  },
+
+  async getWeekReview(weekStart) {
+    const { data, error } = await requireSupabase()
+      .from('week_reviews')
+      .select(REVIEW_COLS)
+      .eq('week_start', weekStart)
+      .maybeSingle()
+    if (error) throw new Error(error.message)
+    return data ? toReview(data as ReviewRow) : null
+  },
+
+  async saveWeekReview(report) {
+    const userId = await currentUserId()
+    const { error } = await requireSupabase()
+      .from('week_reviews')
+      .upsert(
+        {
+          user_id: userId,
+          week_start: report.weekStart,
+          tasks_done: report.tasksDone,
+          tasks_open: report.tasksOpen,
+          goals_completed: report.goalsCompleted,
+          goals_total: report.goalsTotal,
+        },
+        { onConflict: 'user_id,week_start' },
+      )
+    if (error) throw new Error(error.message)
   },
 
   async getProfile() {

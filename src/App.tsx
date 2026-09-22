@@ -14,6 +14,7 @@ import { SignUpPage } from '@/features/auth/SignUpPage'
 import { VerifyPage } from '@/features/auth/VerifyPage'
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
 import { RequireOnboarded } from '@/features/onboarding/RequireOnboarded'
+import { WeeklyReviewPage } from '@/features/weekly/WeeklyReviewPage'
 import { useAuthStore } from '@/features/auth/useAuthStore'
 
 export default function App() {
@@ -29,6 +30,14 @@ export default function App() {
         <Route path="/verify" element={<VerifyPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route
+          path="/weekly-review"
+          element={
+            <RequireAuth>
+              <WeeklyReviewPage />
+            </RequireAuth>
+          }
+        />
         <Route
           path="/onboarding"
           element={

@@ -5,7 +5,7 @@ import type {
   MoveTaskInput,
   PillarsRepository,
 } from './repository'
-import type { Goal, IsoDate, Pillar, Profile, Task } from './types'
+import type { Goal, IsoDate, Pillar, Profile, Task, WeekReport } from './types'
 
 const uid = () => Math.random().toString(36).slice(2, 10)
 
@@ -48,6 +48,34 @@ const goals: Goal[] = [
     unit: 'people',
     weekStart: day(0),
   },
+  // --- last week, so the weekly review has a week to actually report on ---
+  {
+    id: 'g-run-prev',
+    pillarId: 'p-health',
+    title: 'Move three times',
+    description: 'Three sessions that get the heart rate up.',
+    target: 3,
+    unit: 'sessions',
+    weekStart: day(-7),
+  },
+  {
+    id: 'g-ship-prev',
+    pillarId: 'p-craft',
+    title: 'Ship something',
+    description: 'Put two real pieces of work in front of people.',
+    target: 2,
+    unit: 'things shipped',
+    weekStart: day(-7),
+  },
+  {
+    id: 'g-call-prev',
+    pillarId: 'p-people',
+    title: 'Reach out',
+    description: "Three people I'd regret losing touch with.",
+    target: 3,
+    unit: 'people',
+    weekStart: day(-7),
+  },
   {
     id: 'g-read',
     pillarId: 'p-mind',
@@ -81,6 +109,15 @@ let tasks: Task[] = [
 
   t('p-health', 'g-run', 'Long run', 4, 'medium', 'open'),
   t('p-people', 'g-call', 'Coffee with Sam', 4, 'medium', 'open'),
+
+  t('p-health', 'g-run-prev', 'Morning run', -7, 'medium', 'done'),
+  t('p-craft', 'g-ship-prev', 'Ship the pricing page', -7, 'high', 'done'),
+  t('p-health', 'g-run-prev', 'Gym', -6, 'medium', 'done'),
+  t('p-people', 'g-call-prev', 'Call Dad', -6, 'high', 'open'),
+  t('p-craft', 'g-ship-prev', 'Write the changelog', -5, 'medium', 'done'),
+  t('p-money', null, 'Cancel the old subscription', -5, 'low', 'open'),
+  t('p-health', 'g-run-prev', 'Long run', -4, 'medium', 'open'),
+  t('p-people', 'g-call-prev', 'Text Priya', -3, 'low', 'done'),
 
   // Saturday left entirely empty on purpose.
 
@@ -120,6 +157,8 @@ tasks = tasks.map((task) => {
 
 let pillarList = [...pillars]
 let goalList = [...goals]
+
+const weekReviews = new Map<IsoDate, WeekReport>()
 
 let profile: Profile = {
   archetypes: [],
@@ -231,6 +270,15 @@ export const mockRepository: PillarsRepository = {
     }
     goalList = [...goalList, goal]
     return settle(goal)
+  },
+
+  async getWeekReview(weekStart) {
+    return settle(weekReviews.get(weekStart) ?? null)
+  },
+
+  async saveWeekReview(report) {
+    weekReviews.set(report.weekStart, report)
+    return settle(undefined)
   },
 
   async getProfile() {

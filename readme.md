@@ -34,6 +34,22 @@ Restart the dev server. `src/data/index.ts` picks the Supabase repository as
 soon as both keys are present, and the sign-in screen stops saying it is
 unconfigured.
 
+## Seeing the reminders
+
+Both nudges are time-gated, so they will not show up on a Tuesday afternoon.
+In development, force one:
+
+| URL | Shows |
+| --- | --- |
+| `/?preview=eod` | The end-of-day toast, then the triage cards |
+| `/?preview=weekly` | Redirects to the weekly report card |
+| `/weekly-review` | The report card directly, any time |
+
+Otherwise the end-of-day nudge appears past `eod_reminder_time` (default
+20:00) when tasks scheduled for today are still open, and the weekly prompt
+appears once the planning slot chosen in onboarding has passed and last week
+has not been reviewed. `preview` is stripped from production builds.
+
 ## Where things are
 
 ```
@@ -43,6 +59,10 @@ src/components/       Shared primitives.
 src/features/board/   The main view: week grid, pillars, tasks, drag and drop.
 src/features/auth/    Sign in, sign up, verify, password reset.
 src/features/onboarding/  The six-step setup flow, archetype catalog, matcher.
+src/features/weekly/  Weekly review: report card, then next week’s goals.
+src/features/eod/     End-of-day nudge and one-card-at-a-time triage.
+src/features/reminders/  Pure rules for when each nudge is owed.
+src/features/goals/   The goal editor, shared by onboarding and the review.
 src/data/             Repository interface, types, and the in-memory mock.
 src/lib/              Dates, class merging, Supabase client.
 ```
@@ -74,18 +94,24 @@ six starting templates against the brain-dump text plus the chosen archetypes.
 It is instant, free, works offline, and the next screen lets the user edit
 everything anyway — so a wrong guess costs one click, not a bad outcome.
 
+**Reminder rules are pure functions.** `reminders.ts` decides whether a nudge
+is owed from arguments alone, with no I/O, so the logic can be reasoned about
+and tested without a clock or a network. The hook feeds it data; it just
+answers. Every `localStorage` access is wrapped — it throws in private mode,
+and a lost snooze should mean one extra nudge, not a broken board.
+
 ## Status
 
 Built: design tokens and primitives; the main view (week grid, pillar
 activation, drag and drop across days and pillars); the "This Week" slide-over;
-the add/edit task dialog; auth with the Supabase schema behind it; and the
-six-step onboarding flow.
+the add/edit task dialog; auth with the Supabase schema behind it; the
+six-step onboarding flow; and both reminder flows.
 
 Goal progress is **derived, never stored**. `selectGoalStats` counts tasks
 linked to a goal to get "# planned, # done", so the numbers cannot drift out of
 sync with the board: planning a task is what makes it planned.
 
-Next: the weekly-planning and end-of-day flows, and the responsive mobile pass. One known rough edge: the task dialog still drops a single frame
+Next: the responsive mobile pass, and connecting a real Supabase project. One known rough edge: the task dialog still drops a single frame
 the first time it opens per page load.
 
 Fonts: Helvetica Neue has no free web licence, so Apple devices get the real
