@@ -8,9 +8,11 @@
 --
 -- The trigger copies one to the other, so a single signUp() call populates
 -- both and they cannot drift apart.
+--
+-- Safe to run twice: nobody has to know whether it already ran.
 
 alter table profiles
-  add column full_name text not null default '';
+  add column if not exists full_name text not null default '';
 
 -- Replaces the version in 0001, which only inserted the id.
 create or replace function handle_new_user() returns trigger

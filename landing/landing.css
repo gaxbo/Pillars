@@ -1,0 +1,31 @@
+/* Only the landing's own files and the shared components are scanned, so the
+   app's utilities don't ride along into this build. */
+@import 'tailwindcss' source(none);
+@source './';
+@source '../src/components';
+
+@import '../src/design/tokens.css';
+@import '../src/components/week-vignette.css';
+
+/* Z-index scale for this page. The sticky nav is the only layer:
+     30  nav
+   Everything else stays in normal flow. */
+
+/* The page scrolls; the app's full-height shell doesn't apply here. */
+html,
+body,
+#root {
+  height: auto;
+  min-height: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Anchored sections land below the sticky nav instead of under it. */
+[id] {
+  scroll-margin-top: 5rem;
+}

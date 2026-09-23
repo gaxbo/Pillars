@@ -18,6 +18,9 @@ npm run dev
 | `npm run build` | Typecheck, then production build |
 | `npm run preview` | Serve the production build |
 | `npm run typecheck` | `tsc --noEmit` |
+| `npm run dev:landing` | The landing page on :5180 |
+| `npm run build:landing` | Typecheck, then build the landing into `dist-landing/` |
+| `npm run shots:landing` | Recapture the landing's product screenshots from the app |
 
 ## Connecting Supabase
 
@@ -75,12 +78,44 @@ magic *link* by default. For the 6-digit code the design calls for, edit
 in place of `{{ .ConfirmationURL }}`. Without that the code screen has no code
 to accept.
 
+## The landing page
+
+A separate, pre-launch site in `landing/`: the case for Pillars and a waitlist
+form. It shares the app's tokens, `WeekVignette`, and onboarding catalog, but
+builds on its own (`vite.landing.config.ts`), so it can go live while the app
+stays private.
+
+- **The waitlist** is the `waitlist` table from
+  `supabase/migrations/0003_waitlist.sql`. Anyone can add an address; nobody
+  can read the list through the API. Export it from Table Editor → `waitlist`
+  → Export to CSV, then import into whichever email tool you pick. `source`
+  says which form (hero or footer) each address came from.
+- **Screenshots** in `landing/public/shots/` are real captures of the app on
+  sample data. Re-run `npm run shots:landing` after changing the app's look.
+  The script refuses to capture text containing an em or en dash.
+- **Deploying:** a second Vercel project from this same repo. Build command
+  `npm run build:landing`, output directory `dist-landing`, env vars
+  `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+- **Design rules:** built against the `design-taste-frontend` skill. No em
+  dashes anywhere, one button label for one action ("Join the list"), real
+  screenshots rather than mock-ups, no section eyebrows, every section a
+  different layout, and WCAG AA contrast on every button and field. It is
+  light-only on purpose, to match the app.
+- **Scroll motion** (the hero's tilting board, the pinned pile) is written as
+  `useTransform(progress, (v) => …)` functions using `landing/scroll.ts`,
+  never as `[a, b] → [x, y]` ranges. Motion hands range transforms to the
+  browser's scroll timelines, which don't clamp: lists that had faded in
+  faded back out. Both sections sit in a `Resilient` boundary, so a failed
+  animation falls back to the still version instead of blanking the page.
+
 ## Where things are
 
 ```
 design screens/       The hi-fi exports the UI is built against. Input, not code.
 src/design/           Tokens (tokens.css) and spring configs (motion.ts).
-src/components/       Shared primitives.
+src/components/       Shared primitives, and WeekVignette (sign-in + landing).
+landing/              The pre-launch landing page and waitlist form.
+scripts/              capture-landing-shots.mjs.
 src/features/board/   The main view: week grid, pillars, tasks, drag and drop.
 src/features/auth/    Sign in, sign up, verify, password reset.
 src/features/onboarding/  The six-step setup flow, archetype catalog, matcher.
@@ -122,6 +157,10 @@ strip is a drop target, so a task can still move to a day that isn't on
 screen. On touch a drag starts with a press and hold so a swipe still scrolls,
 the lifted card hangs below the finger so it doesn't hide the strip, and drops
 are hit-tested by the finger rather than the card's corners.
+
+**Buttons need 4.5:1.** `--gradient-primary` gives white labels only 2.4 to
+2.9:1. `--gradient-primary-strong` is the same blue, deep enough for WCAG AA;
+the landing uses it, and the app's buttons should move to it.
 
 **Inputs are 16px on a phone.** iOS zooms the page into any field smaller than
 that on focus. Inputs drop back to their designed size from `md` up.

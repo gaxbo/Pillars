@@ -2,32 +2,32 @@
 
 ## Blocked on a dashboard change
 
-- [ ] **Run `supabase/migrations/0002_profile_name.sql`.** Adds
-      `profiles.full_name` and updates the signup trigger to copy the name
-      out of auth metadata. Until it runs, sign-up still works but the name
-      only lands in `auth.users.raw_user_meta_data`, not in `profiles`.
+- [ ] **Run `supabase/migrations/0003_waitlist.sql`.** Until it runs, the
+      landing page's form shows "Something went wrong" for every address.
 
-- [ ] **Switch the signup email to a 6-digit code.** Supabase → Authentication →
-      Emails → *Confirm signup*. Replace `{{ .ConfirmationURL }}` with
-      `{{ .Token }}`. Until then the email sends a link, which still signs you
-      in and lands on onboarding — but `/verify` asks for a code it never
-      receives. Decide: change the template, or simplify `/verify` to
-      "click the link" and drop the code entry.
-- [ ] **Same edit for password reset**, if codes are wanted there too — it's a
-      separate template (*Reset password*).
+- [ ] **Set the email code length to 6.** Supabase → Authentication → Sign In /
+      Providers → Email → *Email OTP Length*. The project sends 8-digit codes,
+      but `/verify` takes exactly six (`CodeInput` trims to 6), so every
+      sign-up is stuck on that screen until this changes.
 - [ ] Add the deployed origin as a redirect URL once there is one
       (Authentication → URL Configuration). `http://localhost:5173` is enough
       for now.
+- [ ] **Move sign-up email off personal Gmail before real launch.** Custom SMTP
+      is `smtp.gmail.com` with an App Password: fine for testers (~500/day),
+      but mail comes from a personal address. A domain plus Resend or similar.
 
-## Verification still owed
+Password reset stays a link on purpose — `/reset-password` is built for the
+link, so its template needs no change.
 
-- [ ] Confirm the name reaches both places after 0002:
-      `auth.users.raw_user_meta_data->>'full_name'` and `profiles.full_name`.
+## Verified (2026-09-22)
 
-- [ ] Confirm a real sign-up writes a `profiles` row via the
-      `handle_new_user` trigger, and that onboarding's pillars and goals land
-      with the right `user_id`. Schema, columns, and RLS are verified; the
-      write path is not.
+Against the real project, via a real sign-up of `gabo.page04+pillarstest@gmail.com`:
+the code email arrives; `0002` is applied and the name lands in both
+`raw_user_meta_data` and `profiles.full_name`; `handle_new_user` creates the
+profile row at sign-up; onboarding writes the profile fields, five pillars and
+a goal, all with the new user's `user_id`; anon sees none of those rows.
+Signing in unconfirmed routes to `/verify`. Delete the test user
+(Authentication → Users) when it's no longer useful.
 
 ## Known rough edges
 
@@ -45,10 +45,26 @@
 - [ ] **Tablet portrait (768–1279px)** still gets the 3-column grid, so the
       week wraps as 3 / 3 / 1. Works, but it's the next layout worth a look.
 
+## Landing page
+
+- [ ] **Deploy it** as its own Vercel project: same repo, Build
+      `npm run build:landing`, Output `dist-landing`, env vars
+      `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`.
+- [ ] **Pick an email tool** and import the list (Table Editor → Export CSV),
+      or forward new sign-ups to it automatically.
+- [ ] **Rate-limit the waitlist.** Anyone can insert straight into the table.
+      Fine at this size; before it matters, put inserts behind an Edge
+      Function with Turnstile, and forward to the email tool from there.
+- [ ] An Open Graph image, once there's a domain to host it on.
+
+## Accessibility
+
+- [ ] **Move the app's buttons to `--gradient-primary-strong`.** White on
+      `--gradient-primary` is 2.4 to 2.9:1, under WCAG AA's 4.5:1. The landing
+      already uses the stronger version.
+
 ## Housekeeping
 
-- [ ] Commit. Phases 3–6 plus auth and the sign-in showcase are still
-      uncommitted.
 - [ ] Deploy somewhere (Vercel/Netlify) so testers get a URL.
 
 ## Notes to self

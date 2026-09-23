@@ -1,5 +1,5 @@
 /* ---------------------------------------------------------------------------
-   Sign-in showcase motion.
+   Week vignette motion. Shared by the sign-in showcase and the landing hero.
 
    One loop that tells the product's whole story: two tasks get done, and the
    week's goal fills up behind them. Every keyframe below shares the same
@@ -241,6 +241,21 @@
   }
   .sc-count-3 {
     opacity: 1 !important;
+  }
+  /* The tasks too, or they read as struck through but never checked. */
+  .sc-check-a,
+  .sc-check-b {
+    background-color: var(--color-blue-500) !important;
+    border-color: var(--color-blue-500) !important;
+  }
+  .sc-tick-a,
+  .sc-tick-b {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .sc-fade-a,
+  .sc-fade-b {
+    color: var(--color-slate-400) !important;
   }
 }
 

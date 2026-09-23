@@ -93,7 +93,7 @@ const goals: Goal[] = [
  * active one, so the fixture has to show both side by side.
  */
 let tasks: Task[] = [
-  t('p-health', 'g-run', 'Morning run — 5k', 0, 'high', 'done'),
+  t('p-health', 'g-run', 'Morning run, 5k', 0, 'high', 'done'),
   t('p-health', null, 'Meal prep for the week', 0, 'medium', 'open'),
   t('p-craft', 'g-ship', 'Finish the onboarding flow', 0, 'high', 'open'),
   t('p-mind', 'g-read', 'Read 20 pages', 0, 'low', 'done'),
@@ -101,7 +101,7 @@ let tasks: Task[] = [
   t('p-craft', 'g-ship', 'Review pull requests', 1, 'medium', 'open'),
   t('p-people', 'g-call', 'Call Mom', 1, 'high', 'open'),
 
-  t('p-health', 'g-run', 'Gym — upper body', 2, 'medium', 'open'),
+  t('p-health', 'g-run', 'Gym: upper body', 2, 'medium', 'open'),
   t('p-money', null, 'Review monthly spend', 2, 'low', 'open'),
   t('p-mind', 'g-read', 'Read 20 pages', 2, 'low', 'open'),
 

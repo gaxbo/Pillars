@@ -45,6 +45,10 @@
   --color-priority-medium: #f5a524;
   --color-priority-low: #30a46c;
 
+  /* priority-high darkened until it passes WCAG AA (4.99:1) as text on
+     white. The raw red is 3.9:1: fine as a dot, too light for words. */
+  --color-error-text: #c93c41;
+
   /* --- radii ------------------------------------------------------------ */
   --radius-task: 0.625rem;
   --radius-pillar: 0.875rem;
@@ -90,6 +94,15 @@
 
   /* Primary action fill. */
   --gradient-primary: linear-gradient(180deg, #62b0e4 0%, #4d9ed4 100%);
+
+  /* The same action, deep enough for its white label to pass WCAG AA
+     (4.7:1 at the top, 5.4:1 at the bottom). --gradient-primary is 2.4-2.9:1.
+     Used by the landing page; the app's buttons should move to it too. */
+  --gradient-primary-strong: linear-gradient(180deg, #3479a9 0%, #2f6f9b 100%);
+
+  /* The saturated sky behind the week vignette: sign-in showcase and the
+     landing hero. The only large area of strong color in the product. */
+  --gradient-showcase: linear-gradient(170deg, #5cb4ee 0%, #86cdf4 52%, #c9e6f7 100%);
 
   /* Day columns: frosted white over the page wash, so a column reads as a
      container without drawing a hard box around it. */
