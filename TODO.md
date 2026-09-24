@@ -49,7 +49,16 @@ Signing in unconfirmed routes to `/verify`. Delete the test user
 
 - [ ] **Deploy it** as its own Vercel project: same repo, Build
       `npm run build:landing`, Output `dist-landing`, env vars
-      `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`.
+      `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`, and `VITE_APP_URL`
+      (the app's address, for the nav's early access sign-in; without it the
+      link points at this site's own `/sign-in`).
+- [ ] **Confirm the roadmap's "Exploring" items** (`landing/RoadmapPage.tsx`):
+      repeating tasks, calendar alongside, phone reminders. They're
+      placeholders, labelled as ideas, not decisions.
+- [ ] **Beta is open, not gated.** "Early access sign in" goes to the app's
+      normal sign-in, and anyone can still make an account at `/sign-up`.
+      If early access should mean invited only, gate sign-up (an allowlist
+      table, or turn off sign-ups in Supabase and invite users).
 - [ ] **Pick an email tool** and import the list (Table Editor → Export CSV),
       or forward new sign-ups to it automatically.
 - [ ] **Rate-limit the waitlist.** Anyone can insert straight into the table.
@@ -59,9 +68,30 @@ Signing in unconfirmed routes to `/verify`. Delete the test user
 
 ## Accessibility
 
-- [ ] **Move the app's buttons to `--gradient-primary-strong`.** White on
-      `--gradient-primary` is 2.4 to 2.9:1, under WCAG AA's 4.5:1. The landing
-      already uses the stronger version.
+- [x] **Move the app's buttons to `--gradient-primary-strong`.** Done
+      (2026-09-23) through the shared `.btn-primary` class in `tokens.css`.
+- [ ] **Test with a real screen reader.** axe-core reports zero WCAG 2.2 AA
+      violations on all 14 screens and states (landing, roadmap, board on
+      desktop and phone, task dialog, goals panel, check-in, weekly banner and
+      review, settings, sign-in, sign-up, onboarding), and keyboard flows pass
+      in Chrome. A person still needs to run VoiceOver (macOS, iOS) and NVDA
+      through: sign in, add a task, move it by keyboard, complete it, the
+      evening check-in, the weekly review, settings.
+
+- [ ] **Set `VITE_SUPPORT_EMAIL` and `VITE_LANDING_URL`** for the app. Help &
+      Support shows no contact line, and About Us no roadmap link, until they're set.
+
+## Done 2026-09-23
+
+- [x] Undo for delete (5 seconds), on the board and in the evening check-in.
+- [x] Failed saves retry at 2s, 5s, 10s, then offer "Try again".
+- [x] Settings, as the design's account menu: Account, Notifications, Pillars & goals
+      (not in the design), Help & Support, About Us, Log out. Each opens a page.
+- [x] New tasks link to their pillar's goal by default.
+- [x] The evening check-in includes open tasks from the last six days.
+- [x] The weekly review is a banner on the board, not a redirect.
+- [x] "Pick a day" in the task's move menu.
+- [x] Label type at 12px, weight 400.
 
 ## Housekeeping
 

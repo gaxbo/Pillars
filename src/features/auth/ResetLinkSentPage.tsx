@@ -45,14 +45,14 @@ export function ResetLinkSentPage() {
       icon={<CheckMark />}
     >
       {email && (
-        <p className="-mt-2 mb-6 text-[13px] text-slate-500">{email}</p>
+        <p className="-mt-2 mb-6 text-[13px] text-slate-600">{email}</p>
       )}
 
       <div className="flex items-center justify-center gap-10">
         <button
           type="button"
           onClick={() => navigate('/sign-in')}
-          className="text-[13px] text-slate-700 underline underline-offset-2 hover:text-blue-700"
+          className="text-[13px] text-slate-700 underline underline-offset-2 hover:text-blue-800 hover:decoration-2"
         >
           Go back
         </button>
@@ -63,7 +63,7 @@ export function ResetLinkSentPage() {
           className={cn(
             'text-[13px] underline underline-offset-2',
             cooldown > 0
-              ? 'cursor-not-allowed text-slate-400 no-underline'
+              ? 'cursor-not-allowed text-slate-600 no-underline'
               : 'text-slate-700 hover:text-blue-700',
           )}
         >
@@ -73,7 +73,7 @@ export function ResetLinkSentPage() {
 
       {note && <p className="mt-5 text-[13px] text-blue-700">{note}</p>}
       {error && (
-        <p role="alert" className="mt-5 text-[13px] text-priority-high">
+        <p role="alert" className="mt-5 text-[13px] text-error-text">
           {error}
         </p>
       )}

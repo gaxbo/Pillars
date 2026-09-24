@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { cn } from '@/lib/cn'
 import { joinWaitlist, looksLikeEmail, type JoinResult } from './waitlist'
 
@@ -6,7 +6,7 @@ type Status = 'idle' | 'sending' | JoinResult
 
 interface WaitlistFormProps {
   /** Which form on the page this is, stored alongside the address. */
-  source: 'hero' | 'footer'
+  source: 'hero' | 'footer' | 'roadmap'
   /** Lets the nav's "Join the list" focus this form's input. */
   inputId?: string
   className?: string
@@ -21,6 +21,14 @@ export function WaitlistForm({ source, inputId, className }: WaitlistFormProps) 
   const [email, setEmail] = useState('')
   const [trap, setTrap] = useState('')
   const [status, setStatus] = useState<Status>('idle')
+  const doneRef = useRef<HTMLDivElement>(null)
+
+  // The form, and the button that was focused, are replaced by the result.
+  // Focus follows it, or a keyboard user would be dropped back at the top.
+  const finished = status === 'joined' || status === 'already'
+  useEffect(() => {
+    if (finished) doneRef.current?.focus()
+  }, [finished])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -41,9 +49,14 @@ export function WaitlistForm({ source, inputId, className }: WaitlistFormProps) 
     setStatus(await joinWaitlist(address, source))
   }
 
-  if (status === 'joined' || status === 'already') {
+  if (finished) {
     return (
-      <div role="status" className={cn('max-w-md', className)}>
+      <div
+        ref={doneRef}
+        role="status"
+        tabIndex={-1}
+        className={cn('max-w-md rounded-sm outline-none', className)}
+      >
         <p className="text-[19px] font-semibold tracking-tight text-slate-900">
           {status === 'joined' ? "You're on the list." : "You're already on the list."}
         </p>
@@ -84,24 +97,20 @@ export function WaitlistForm({ source, inputId, className }: WaitlistFormProps) 
               // 16px: iOS zooms the page into any smaller field.
               'min-w-0 flex-1 rounded-pill border bg-white px-5 py-3 text-[16px] text-slate-900',
               'shadow-[var(--shadow-rest)] outline-none transition-[border-color,box-shadow] duration-150',
-              'focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/30',
-              invalid ? 'border-error-text' : 'border-slate-300',
+              'hover:border-blue-400 focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/30',
+              invalid ? 'border-error-text' : 'border-slate-500',
             )}
           />
 
           <button
             type="submit"
             disabled={status === 'sending'}
+            aria-busy={status === 'sending' || undefined}
             className={cn(
-              'shrink-0 whitespace-nowrap rounded-pill px-6 py-3 text-[15px] font-semibold text-white',
-              'transition-[transform,opacity] duration-150 active:scale-[0.98]',
+              'btn-primary shrink-0 whitespace-nowrap rounded-pill px-6 py-3 text-[15px] font-semibold',
               'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700',
-              status === 'sending' ? 'cursor-wait opacity-80' : 'hover:opacity-95',
+              status === 'sending' && 'cursor-wait',
             )}
-            style={{
-              background: 'var(--gradient-primary-strong)',
-              boxShadow: 'var(--shadow-raised)',
-            }}
           >
             {status === 'sending' ? 'Joining…' : 'Join the list'}
           </button>

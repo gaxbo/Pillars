@@ -101,21 +101,17 @@ const DayChip = memo(function DayChip({
       className={cn(
         'flex flex-col items-center gap-1 rounded-task pb-1.5 pt-2',
         'transition-[background-color,box-shadow,scale] duration-150',
-        'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-500',
-        !selected && 'hover:bg-white/70',
+        'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-700',
+        selected ? 'btn-primary' : 'hover:bg-blue-100 active:bg-blue-200',
         // Grows under a dragged task so it shows around the fingertip.
         isOver && 'scale-115 bg-white ring-2 ring-blue-400',
       )}
-      style={
-        selected
-          ? { background: 'var(--gradient-primary)', boxShadow: 'var(--shadow-raised)' }
-          : undefined
-      }
     >
       <span
         className={cn(
-          'label-mono text-[9px] leading-none',
-          selected ? 'text-white/85' : today ? 'text-blue-600' : 'text-slate-500',
+          // Tighter than the label voice's usual spacing: seven fit across a phone.
+          'label-mono text-[12px] leading-none tracking-[0.02em]',
+          selected ? 'text-white' : today ? 'text-blue-800' : 'text-slate-600',
         )}
       >
         {dayLabel(date)}
@@ -126,9 +122,9 @@ const DayChip = memo(function DayChip({
           selected
             ? 'text-white'
             : today
-              ? 'text-blue-700'
+              ? 'text-blue-800'
               : past
-                ? 'text-slate-400'
+                ? 'text-slate-600'
                 : 'text-slate-900',
         )}
       >

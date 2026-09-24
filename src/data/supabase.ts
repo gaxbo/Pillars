@@ -304,6 +304,29 @@ export const supabaseRepository: PillarsRepository = {
     return toGoal(row)
   },
 
+  async updateGoal(id, patch) {
+    const row = unwrap<GoalRow>(
+      await requireSupabase()
+        .from('goals')
+        .update({
+          ...(patch.title !== undefined && { title: patch.title }),
+          ...(patch.description !== undefined && { description: patch.description }),
+          ...(patch.target !== undefined && { target: patch.target }),
+          ...(patch.unit !== undefined && { unit: patch.unit }),
+        })
+        .eq('id', id)
+        .select(GOAL_COLS)
+        .single(),
+    )
+    return toGoal(row)
+  },
+
+  // tasks.goal_id is `on delete set null`, so linked tasks just lose the link.
+  async deleteGoal(id) {
+    const { error } = await requireSupabase().from('goals').delete().eq('id', id)
+    if (error) throw new Error(error.message)
+  },
+
   async getWeekReview(weekStart) {
     const { data, error } = await requireSupabase()
       .from('week_reviews')

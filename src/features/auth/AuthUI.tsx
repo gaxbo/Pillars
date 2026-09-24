@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 import { AuthShowcase } from './AuthShowcase'
 
@@ -16,18 +16,18 @@ export function AuthLayout({
 }) {
   if (!split) {
     return (
-      <div className="flex min-h-full items-center justify-center p-6">
+      <main className="flex min-h-full items-center justify-center p-6">
         {children}
-      </div>
+      </main>
     )
   }
 
   return (
     <div className="flex min-h-full flex-col lg:flex-row">
       <AuthShowcase />
-      <div className="flex flex-1 items-center justify-center bg-white p-6">
+      <main className="flex flex-1 items-center justify-center bg-white p-6">
         {children}
-      </div>
+      </main>
     </div>
   )
 }
@@ -73,24 +73,36 @@ export function AuthSubtitle({ children }: { children: ReactNode }) {
   )
 }
 
+/**
+ * A field with its label above it. The label used to be the placeholder,
+ * which vanished on the first keystroke and left a filled-in form with no
+ * names on it (WCAG 3.3.2).
+ */
 export function TextField({
   label,
   ...props
 }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+  const fallbackId = useId()
+  const id = props.id ?? fallbackId
   return (
-    <input
-      aria-label={label}
-      placeholder={label}
-      {...props}
-      className={cn(
-        // 16px on a phone: iOS zooms the page into any smaller field.
-        'w-full rounded-pill border border-white/80 bg-white px-5 py-3.5 text-[16px] md:text-[15px]',
-        'text-slate-900 placeholder:text-slate-400',
-        'shadow-[var(--shadow-rest)] outline-none transition-shadow duration-150',
-        'focus-visible:border-blue-400 focus-visible:ring-2 focus-visible:ring-blue-400/30',
-        props.className,
-      )}
-    />
+    <div className="flex flex-col gap-1.5 text-left">
+      <label htmlFor={id} className="pl-4 text-[13px] font-medium text-slate-800">
+        {label}
+      </label>
+      <input
+        {...props}
+        id={id}
+        className={cn(
+          // 16px on a phone: iOS zooms the page into any smaller field.
+          'w-full rounded-pill border border-slate-500 bg-white px-5 py-3.5 text-[16px] md:text-[15px]',
+          'text-slate-900 placeholder:text-slate-500',
+          'shadow-[var(--shadow-rest)] outline-none transition-[border-color,box-shadow] duration-150',
+          'hover:border-blue-400',
+          'focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/30',
+          props.className,
+        )}
+      />
+    </div>
   )
 }
 
@@ -104,18 +116,11 @@ export function AuthButton({
     <button
       {...props}
       disabled={disabled}
+      aria-busy={busy || undefined}
       className={cn(
-        'w-full rounded-pill px-6 py-3.5 text-[15px] font-semibold text-white',
-        'transition-opacity duration-150',
-        disabled ? 'cursor-not-allowed' : 'hover:opacity-90',
-        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600',
+        'btn-primary w-full rounded-pill px-6 py-3.5 text-[15px] font-semibold',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700',
       )}
-      style={{
-        background: disabled
-          ? 'var(--color-slate-400)'
-          : 'var(--gradient-primary)',
-        boxShadow: disabled ? 'none' : 'var(--shadow-raised)',
-      }}
     >
       {busy ? 'Just a moment…' : children}
     </button>
@@ -130,8 +135,8 @@ export function AuthLink({
     <a
       {...props}
       className={cn(
-        'text-[13px] text-slate-700 underline underline-offset-2',
-        'transition-colors duration-150 hover:text-blue-700',
+        'rounded-sm text-[13.5px] text-slate-700 underline underline-offset-2',
+        'transition-colors duration-150 hover:text-blue-800 hover:decoration-2',
         props.className,
       )}
     >
@@ -146,7 +151,7 @@ export function AuthError({ children }: { children: ReactNode }) {
   return (
     <p
       role="alert"
-      className="mt-4 rounded-pillar border border-priority-high/20 bg-priority-high/5 px-4 py-2.5 text-[13px] text-priority-high"
+      className="mt-4 rounded-pillar border border-error-text/25 bg-error-text/5 px-4 py-2.5 text-[13px] text-error-text"
     >
       {children}
     </p>
@@ -238,11 +243,11 @@ export function CodeInput({
       placeholder="000000"
       aria-label="Six-digit code"
       className={cn(
-        'w-full rounded-pill border border-white/80 bg-white px-6 py-4',
+        'w-full rounded-pill border border-slate-500 bg-white px-6 py-4',
         'text-center text-[26px] font-semibold tracking-[0.5em] text-slate-900',
-        'placeholder:font-normal placeholder:tracking-[0.5em] placeholder:text-slate-300',
+        'placeholder:font-normal placeholder:tracking-[0.5em] placeholder:text-slate-500',
         'shadow-[var(--shadow-rest)] outline-none transition-shadow duration-150',
-        'focus-visible:border-blue-400 focus-visible:ring-2 focus-visible:ring-blue-400/30',
+        'focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/30',
       )}
     />
   )

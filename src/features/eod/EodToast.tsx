@@ -2,6 +2,8 @@ import { cn } from '@/lib/cn'
 
 interface EodToastProps {
   count: number
+  /** How many of `count` were left on earlier days. */
+  earlier: number
   onOpen: () => void
   onLater: () => void
 }
@@ -11,11 +13,12 @@ interface EodToastProps {
  * line; on a phone the actions wrapped inside the pill's curve, so there it
  * becomes a card with the actions on their own row.
  */
-export function EodToast({ count, onOpen, onLater }: EodToastProps) {
+export function EodToast({ count, earlier, onOpen, onLater }: EodToastProps) {
   return (
-    <div
-      role="status"
-      aria-label="Tasks still open today"
+    // A landmark to find it by; only the sentence is a live region, so a
+    // screen reader announces it once, not every button in it.
+    <section
+      aria-label="End of day"
       className="animate-rise fixed inset-x-0 bottom-6 z-40 flex justify-center px-4"
     >
       <div
@@ -28,9 +31,15 @@ export function EodToast({ count, onOpen, onLater }: EodToastProps) {
           boxShadow: 'var(--shadow-lift)',
         }}
       >
-        <p className="text-[15px] text-slate-800">
+        <p role="status" className="text-[15px] text-slate-800">
           <span className="font-semibold tabular-nums">{count}</span>{' '}
-          {count === 1 ? 'task is' : 'tasks are'} still open today.
+          {count === 1 ? 'task is' : 'tasks are'} still open
+          {earlier === 0
+            ? ' today'
+            : earlier === count
+              ? ' from earlier days'
+              : `, ${earlier} from earlier days`}
+          .
         </p>
 
         <div className="flex items-center gap-4">
@@ -38,14 +47,9 @@ export function EodToast({ count, onOpen, onLater }: EodToastProps) {
             type="button"
             onClick={onOpen}
             className={cn(
-              'rounded-pill px-4 py-2 text-[13px] font-semibold text-white',
-              'transition-opacity duration-150 hover:opacity-90',
-              'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500',
+              'btn-primary rounded-pill px-4 py-2 text-[13px] font-semibold',
+              'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700',
             )}
-            style={{
-              background: 'var(--gradient-primary)',
-              boxShadow: 'var(--shadow-raised)',
-            }}
           >
             Take a look
           </button>
@@ -53,12 +57,12 @@ export function EodToast({ count, onOpen, onLater }: EodToastProps) {
           <button
             type="button"
             onClick={onLater}
-            className="pr-3 text-[13px] text-slate-600 underline underline-offset-2 transition-colors hover:text-slate-900"
+            className="mr-3 rounded-sm text-[13px] text-slate-700 underline underline-offset-2 transition-colors hover:text-blue-800 hover:decoration-2"
           >
-            remind me later
+            Remind me later
           </button>
         </div>
       </div>
-    </div>
+    </section>
   )
 }

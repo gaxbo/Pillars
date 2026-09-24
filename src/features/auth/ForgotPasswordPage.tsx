@@ -64,7 +64,7 @@ export function ForgotPasswordPage() {
         <div className="mt-6 flex flex-col items-start gap-2">
           <Link
             to="/sign-in"
-            className="text-[13px] text-slate-700 underline underline-offset-2 hover:text-blue-700"
+            className="text-[13px] text-slate-700 underline underline-offset-2 hover:text-blue-800 hover:decoration-2"
           >
             Go back
           </Link>

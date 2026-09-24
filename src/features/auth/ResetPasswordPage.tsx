@@ -97,7 +97,7 @@ export function ResetPasswordPage() {
           <button
             type="button"
             onClick={() => navigate('/forgot-password')}
-            className="text-[13px] text-slate-700 underline underline-offset-2 hover:text-blue-700"
+            className="text-[13px] text-slate-700 underline underline-offset-2 hover:text-blue-800 hover:decoration-2"
           >
             {linkExpired ? 'Send a new link' : 'Start over'}
           </button>

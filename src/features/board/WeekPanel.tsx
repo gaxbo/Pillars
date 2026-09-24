@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { Goal, GoalStats, Pillar, Task } from '@/data/types'
 import { cn } from '@/lib/cn'
+import { useDialogFocus } from '@/lib/useDialogFocus'
 import { selectGoalForPillar, selectGoalStats } from './useBoardStore'
 
 interface WeekPanelProps {
@@ -28,11 +29,13 @@ export function WeekPanel({
   tasks,
   planningTime,
 }: WeekPanelProps) {
+  const panelRef = useRef<HTMLDivElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
+
+  useDialogFocus(open, panelRef, closeRef)
 
   useEffect(() => {
     if (!open) return
-    closeRef.current?.focus()
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
@@ -54,10 +57,11 @@ export function WeekPanel({
         aria-hidden="true"
       />
 
-      <aside
+      <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
-        aria-label="This week"
+        aria-labelledby="week-panel-title"
         aria-hidden={!open}
         inert={!open}
         className={cn(
@@ -71,22 +75,25 @@ export function WeekPanel({
           boxShadow: 'var(--shadow-modal)',
         }}
       >
-        <header
+        <div
           className="flex items-center justify-between gap-4 border-b px-6 pb-4 pt-6"
           style={{ borderColor: 'var(--border-hairline)' }}
         >
-          <h2 className="text-[22px] font-bold uppercase tracking-[0.02em] text-slate-900">
-            This week
+          {/* Named for the button that opens it, "View goals". */}
+          <h2
+            id="week-panel-title"
+            className="text-[22px] font-bold uppercase tracking-[0.02em] text-slate-900"
+          >
+            This week&rsquo;s goals
           </h2>
           <button
             ref={closeRef}
             type="button"
             onClick={onClose}
-            aria-label="Close this week"
+            aria-label="Close goals"
             className={cn(
-              'grid size-7 shrink-0 place-items-center rounded-full text-slate-500',
-              'transition-colors duration-150 hover:bg-white/70 hover:text-slate-800',
-              'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500',
+              'btn-icon grid size-8 shrink-0 place-items-center rounded-full',
+              'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700',
             )}
           >
             <svg viewBox="0 0 16 16" className="size-4" aria-hidden="true">
@@ -99,7 +106,7 @@ export function WeekPanel({
               />
             </svg>
           </button>
-        </header>
+        </div>
 
         {/* Named once, so the two bands in every bar below are readable. */}
         <div className="flex items-center gap-4 px-6 pt-3">
@@ -122,7 +129,7 @@ export function WeekPanel({
           className="border-t px-6 pb-6 pt-4"
           style={{ borderColor: 'var(--border-hairline)' }}
         >
-          <p className="text-[13px] text-slate-500">
+          <p className="text-[13px] text-slate-600">
             Planning time is{' '}
             <span className="font-medium text-slate-700">
               {planningTime.day}, {planningTime.time}
@@ -130,7 +137,7 @@ export function WeekPanel({
             .
           </p>
         </footer>
-      </aside>
+      </div>
     </>
   )
 }
@@ -139,7 +146,7 @@ function Legend({ className, label }: { className: string; label: string }) {
   return (
     <span className="flex items-center gap-1.5">
       <span className={cn('size-2 rounded-full', className)} aria-hidden="true" />
-      <span className="label-mono text-[9.5px] text-slate-500">{label}</span>
+      <span className="label-mono text-[12px] text-slate-600">{label}</span>
     </span>
   )
 }
@@ -165,7 +172,7 @@ function GoalRow({
       {goal ? (
         <GoalDetail goal={goal} stats={selectGoalStats(tasks, goal)} />
       ) : (
-        <p className="mt-1 text-[13px] text-slate-400">
+        <p className="mt-1 text-[13px] text-slate-600">
           No goal set for this week.
         </p>
       )}
@@ -180,7 +187,7 @@ function GoalDetail({ goal, stats }: { goal: Goal; stats: GoalStats }) {
         <p className="text-[13px] leading-snug text-slate-600">
           {goal.description}
         </p>
-        <span className="label-mono shrink-0 whitespace-nowrap text-[9.5px] tabular-nums text-slate-400">
+        <span className="label-mono shrink-0 whitespace-nowrap text-[12px] tabular-nums text-slate-600">
           {stats.planned} planned, {stats.done} done
         </span>
       </div>
@@ -208,7 +215,7 @@ function GoalBar({ stats }: { stats: GoalStats }) {
       aria-valuenow={stats.done}
       aria-valuemin={0}
       aria-valuemax={stats.target}
-      aria-label={`${stats.done} of ${stats.target} done, ${stats.planned} planned`}
+      aria-label={`${stats.done} of ${stats.target} done, ${stats.planned} planned${met ? ', goal met' : ''}`}
     >
       <div
         className="goal-bar-fill absolute inset-y-0 left-0 rounded-pill bg-blue-300"

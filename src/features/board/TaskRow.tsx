@@ -40,24 +40,29 @@ export const TaskRow = memo(function TaskRow({
       className={cn(
         'group relative flex items-center gap-2.5 rounded-task py-2 pl-1.5 pr-2 md:py-1.5',
         'transition-colors duration-150',
-        'hover:bg-white/60',
+        'hover:bg-white/90 hover:shadow-[var(--shadow-rest)]',
+        // Keyboard focus anywhere in the row lights it, the same as hover.
+        'has-[:focus-visible]:bg-white/90',
         isDragging && 'opacity-40',
       )}
     >
       <button
         type="button"
         onClick={() => onToggle(task.id)}
-        aria-label={done ? `Mark "${task.title}" not done` : `Mark "${task.title}" done`}
-        aria-pressed={done}
+        // A checkbox, so it's announced as checked or not checked, rather
+        // than a toggle whose label says the opposite of its state.
+        role="checkbox"
+        aria-checked={done}
+        aria-label={`Done: ${task.title}`}
         className={cn(
           'relative grid size-[22px] shrink-0 place-items-center rounded-full md:size-[18px]',
           // A fingertip-sized hit area around a small circle, on phones only.
           'before:absolute before:-inset-2 md:before:hidden',
           'transition-colors duration-150',
-          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500',
+          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700',
           done
-            ? 'bg-blue-500'
-            : 'border border-slate-300 bg-white/70 hover:border-blue-400',
+            ? 'bg-blue-600 hover:bg-blue-700'
+            : 'border-[1.5px] border-slate-500 bg-white hover:border-blue-600 hover:bg-blue-100',
         )}
       >
         {done && (
@@ -88,11 +93,17 @@ export const TaskRow = memo(function TaskRow({
         onClick={() => onOpen(task.id)}
         {...attributes}
         {...listeners}
+        // The priority dot beside the row is visual only; this is its words.
+        aria-label={
+          !done && task.priority !== 'low'
+            ? `${task.title}, ${task.priority} priority`
+            : task.title
+        }
         className={cn(
           'flex-1 cursor-grab select-none text-left text-[15px] leading-snug active:cursor-grabbing md:text-[13.5px]',
           '[-webkit-touch-callout:none]',
-          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 focus-visible:rounded-sm',
-          done ? 'text-slate-400 line-through' : 'text-slate-800',
+          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 focus-visible:rounded-sm',
+          done ? 'text-slate-600 line-through decoration-slate-500' : 'text-slate-800',
         )}
       >
         {task.title}
@@ -102,7 +113,7 @@ export const TaskRow = memo(function TaskRow({
           no mark at all. */}
       {!done && task.priority !== 'low' && (
         <span
-          aria-label={`${task.priority} priority`}
+          aria-hidden="true"
           className={cn(
             'size-[6px] shrink-0 rounded-full',
             task.priority === 'high'

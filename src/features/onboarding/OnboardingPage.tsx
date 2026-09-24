@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { StepProgress } from './OnboardingUI'
 import { ArchetypeStep } from './steps/ArchetypeStep'
 import { DumpStep } from './steps/DumpStep'
@@ -33,9 +33,23 @@ export function OnboardingPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [step])
 
+  // The button that moved you here is gone with the old step, so focus
+  // would drop to the page. It goes to the new step's heading instead; not
+  // on first load, where the browser's own starting point is right.
+  const firstStep = useRef(true)
+  useEffect(() => {
+    if (firstStep.current) {
+      firstStep.current = false
+      return
+    }
+    document.querySelector<HTMLElement>('[data-step-heading]')?.focus({ preventScroll: true })
+  }, [step])
+
   return (
     <div className="min-h-full overflow-x-hidden">
-      <StepProgress label={STEP_LABEL[step]} segment={STEP_SEGMENT[step]} />
+      <header>
+        <StepProgress label={STEP_LABEL[step]} segment={STEP_SEGMENT[step]} />
+      </header>
 
       {/*
         Keying on the step restarts the CSS animation on every move; without a

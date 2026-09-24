@@ -41,7 +41,7 @@ export function PillarsStep() {
       </StepHeading>
 
       {pillars.length === 0 && !adding && (
-        <p className="border-b py-4 text-[17px] text-slate-400"
+        <p className="border-b py-4 text-[17px] text-slate-600"
           style={{ borderColor: 'var(--border-hairline)' }}
         >
           Nothing here yet
@@ -61,8 +61,8 @@ export function PillarsStep() {
               aria-label="Pillar name"
               className={cn(
                 'flex-1 bg-transparent py-1.5 text-[17px] font-semibold text-slate-900',
-                'outline-none placeholder:font-normal placeholder:text-slate-400',
-                'focus-visible:text-blue-800',
+                'outline-none placeholder:font-normal placeholder:text-slate-500',
+                '-mx-2 rounded-md px-2 focus-visible:bg-white focus-visible:text-blue-800 focus-visible:ring-2 focus-visible:ring-blue-600/40',
               )}
               placeholder="Name this pillar"
             />
@@ -71,9 +71,9 @@ export function PillarsStep() {
               onClick={() => remove(pillar.id)}
               aria-label={`Remove ${pillar.name || 'pillar'}`}
               className={cn(
-                'grid size-7 shrink-0 place-items-center rounded-full text-slate-400',
-                'transition-colors duration-150 hover:bg-white/70 hover:text-priority-high',
-                'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-500',
+                'grid size-7 shrink-0 place-items-center rounded-full text-slate-600',
+                'transition-colors duration-150 hover:bg-white/70 hover:text-error-text',
+                'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-700',
               )}
             >
               <svg viewBox="0 0 14 14" className="size-3.5" aria-hidden="true">
@@ -109,7 +109,7 @@ export function PillarsStep() {
             onBlur={commitNew}
             placeholder="Name this pillar"
             aria-label="New pillar name"
-            className="flex-1 bg-transparent py-1.5 text-[17px] font-semibold text-slate-900 outline-none placeholder:font-normal placeholder:text-slate-400"
+            className="-mx-2 flex-1 rounded-md bg-transparent px-2 py-1.5 text-[17px] font-semibold text-slate-900 outline-none placeholder:font-normal placeholder:text-slate-500 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-blue-600/40"
           />
         </div>
       ) : (
@@ -126,7 +126,7 @@ export function PillarsStep() {
         </PrimaryButton>
         <Counter>{named.length} pillars</Counter>
         {named.length > COMFORTABLE_MAX && (
-          <span className="text-[13px] text-slate-500">
+          <span className="text-[13px] text-slate-600">
             That&apos;s a lot to carry. Five or fewer tends to hold up better.
           </span>
         )}

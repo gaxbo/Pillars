@@ -17,6 +17,12 @@ import { WelcomePage } from '@/features/auth/WelcomePage'
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
 import { RequireOnboarded } from '@/features/onboarding/RequireOnboarded'
 import { WeeklyReviewPage } from '@/features/weekly/WeeklyReviewPage'
+import {
+  AccountPage,
+  NotificationsPage,
+  PillarsGoalsPage,
+} from '@/features/settings/SettingsPage'
+import { AboutPage, HelpPage } from '@/features/settings/InfoPages'
 import { useAuthStore } from '@/features/auth/useAuthStore'
 
 export default function App() {
@@ -42,6 +48,27 @@ export default function App() {
             </RequireAuth>
           }
         />
+        {/* The account menu's rows, as in the design's "account op" screen. */}
+        {(
+          [
+            ['/settings/account', <AccountPage />],
+            ['/settings/notifications', <NotificationsPage />],
+            ['/settings/pillars', <PillarsGoalsPage />],
+            ['/help', <HelpPage />],
+            ['/about', <AboutPage />],
+          ] as const
+        ).map(([path, page]) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              <RequireAuth>
+                <RequireOnboarded>{page}</RequireOnboarded>
+              </RequireAuth>
+            }
+          />
+        ))}
+        <Route path="/settings" element={<Navigate to="/settings/account" replace />} />
         <Route
           path="/onboarding"
           element={
@@ -82,7 +109,7 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <div className="flex min-h-full items-center justify-center">
-        <p className="label-mono text-[11px] text-slate-400">Loading…</p>
+        <p role="status" className="label-mono text-[12px] text-slate-600">Loading…</p>
       </div>
     )
   }

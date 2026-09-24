@@ -42,6 +42,12 @@ export interface PillarsRepository {
 
   createPillar(name: string): Promise<Pillar>
   createGoal(input: CreateGoalInput): Promise<Goal>
+  updateGoal(
+    id: string,
+    patch: Partial<Pick<Goal, 'title' | 'description' | 'target' | 'unit'>>,
+  ): Promise<Goal>
+  /** Tasks linked to it keep their pillar and lose the link. */
+  deleteGoal(id: string): Promise<void>
 
   /** Null until a week has been reviewed. */
   getWeekReview(weekStart: IsoDate): Promise<WeekReport | null>

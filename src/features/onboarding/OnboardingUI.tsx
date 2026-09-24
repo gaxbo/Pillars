@@ -15,7 +15,7 @@ export function StepProgress({
 }) {
   return (
     <div className="px-6 pt-8 sm:px-12">
-      <p key={label} className="label-mono animate-fade-in pb-2 text-[11px] text-slate-600">
+      <p key={label} className="label-mono animate-fade-in pb-2 text-[12px] text-slate-600">
         {label}
       </p>
       <div
@@ -43,9 +43,9 @@ export function StepProgress({
 
 export function StepBody({ children }: { children: ReactNode }) {
   return (
-    <div className="mx-auto w-full max-w-5xl px-6 pb-16 pt-10 sm:px-12">
+    <main className="mx-auto w-full max-w-5xl px-6 pb-16 pt-10 sm:px-12">
       {children}
-    </div>
+    </main>
   )
 }
 
@@ -58,7 +58,14 @@ export function StepHeading({
 }) {
   return (
     <header className="mb-8">
-      <h1 className="animate-rise text-[32px] font-bold leading-tight tracking-tight text-slate-900 sm:text-[38px]">
+      {/* Focusable by script only: a step change moves focus here, so a
+          screen reader starts reading the new step instead of losing its
+          place on a button that no longer exists. */}
+      <h1
+        tabIndex={-1}
+        data-step-heading
+        className="animate-rise text-[32px] font-bold leading-tight tracking-tight text-slate-900 outline-none sm:text-[38px]"
+      >
         {title}
       </h1>
       {children && (
@@ -74,23 +81,14 @@ export function PrimaryButton({
   children,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const disabled = props.disabled
   return (
     <button
       {...props}
       className={cn(
-        'rounded-pill px-10 py-3.5 text-[15px] font-semibold text-white',
-        'transition-opacity duration-150',
-        disabled ? 'cursor-not-allowed' : 'hover:opacity-90',
-        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600',
+        'btn-primary rounded-pill px-10 py-3.5 text-[15px] font-semibold',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700',
         props.className,
       )}
-      style={{
-        background: disabled
-          ? 'var(--color-slate-400)'
-          : 'var(--gradient-primary)',
-        boxShadow: disabled ? 'none' : 'var(--shadow-raised)',
-      }}
     >
       {children}
     </button>
@@ -106,8 +104,9 @@ export function QuietLink({
       type="button"
       {...props}
       className={cn(
-        'text-[13px] text-slate-700 underline underline-offset-2',
-        'transition-colors duration-150 hover:text-blue-700',
+        'rounded-sm text-[13.5px] text-slate-700 underline underline-offset-2',
+        'transition-colors duration-150 hover:text-blue-800 hover:decoration-2',
+        'disabled:cursor-not-allowed disabled:opacity-60',
         props.className,
       )}
     >
@@ -126,8 +125,8 @@ export function InlineAction({
       type="button"
       {...props}
       className={cn(
-        'label-mono text-[10.5px] text-slate-600 underline underline-offset-4',
-        'transition-colors duration-150 hover:text-blue-700',
+        'label-mono rounded-sm text-[12px] text-slate-700 underline underline-offset-4',
+        'transition-colors duration-150 hover:text-blue-800 hover:decoration-2',
         props.className,
       )}
     >
@@ -143,7 +142,7 @@ export function StepFooter({ children }: { children: ReactNode }) {
 /** Mono counter, like "# written down" on the dump screen. */
 export function Counter({ children }: { children: ReactNode }) {
   return (
-    <span className="label-mono text-[11px] tabular-nums text-slate-500">
+    <span aria-live="polite" className="label-mono text-[12px] tabular-nums text-slate-600">
       {children}
     </span>
   )

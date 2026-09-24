@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   AuthButton,
   AuthCard,
@@ -17,6 +17,9 @@ export function SignInPage() {
   const offline = useAuthStore((s) => s.offline)
   const setPendingEmail = useAuthStore((s) => s.setPendingEmail)
   const navigate = useNavigate()
+  // The landing page's "Early access" link lands here with ?access=early.
+  const [params] = useSearchParams()
+  const early = params.get('access') === 'early'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -50,9 +53,16 @@ export function SignInPage() {
   return (
     <AuthLayout split>
       <AuthCard>
+        {early && (
+          <p className="label-mono mb-3 text-center text-[12px] text-blue-800">
+            Early access
+          </p>
+        )}
         <AuthTitle size="lg">Pillars</AuthTitle>
         <AuthSubtitle>
-          A weekly planner for your 5-9 and everything in between.
+          {early
+            ? 'Welcome back. Sign in with your beta account.'
+            : 'A weekly planner for your 5-9 and everything in between.'}
         </AuthSubtitle>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-3.5">
@@ -96,13 +106,13 @@ export function SignInPage() {
         <div className="mt-6 flex items-center justify-between gap-4">
           <Link
             to="/sign-up"
-            className="text-[13px] text-slate-700 underline underline-offset-2 hover:text-blue-700"
+            className="text-[13px] text-slate-700 underline underline-offset-2 hover:text-blue-800 hover:decoration-2"
           >
             Make an account
           </Link>
           <Link
             to="/forgot-password"
-            className="text-[13px] text-slate-700 underline underline-offset-2 hover:text-blue-700"
+            className="text-[13px] text-slate-700 underline underline-offset-2 hover:text-blue-800 hover:decoration-2"
           >
             Forgot password?
           </Link>

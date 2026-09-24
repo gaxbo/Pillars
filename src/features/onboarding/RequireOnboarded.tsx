@@ -42,7 +42,7 @@ export function RequireOnboarded({ children }: { children: React.ReactNode }) {
   if (status === 'checking') {
     return (
       <div className="flex min-h-full items-center justify-center">
-        <p className="label-mono text-[11px] text-slate-400">Loading…</p>
+        <p role="status" className="label-mono text-[12px] text-slate-600">Loading…</p>
       </div>
     )
   }

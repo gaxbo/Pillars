@@ -42,10 +42,10 @@ export function TemplatesStep() {
               aria-pressed={selected}
               className={cn(
                 'rounded-pillar border p-5 text-left transition-all duration-200',
-                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500',
+                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700',
                 selected
                   ? 'border-blue-400 shadow-[var(--shadow-raised)]'
-                  : 'border-white/70 hover:border-blue-200',
+                  : 'border-white/70 hover:border-blue-500 hover:shadow-[var(--shadow-raised)]',
               )}
               style={{
                 background: selected
@@ -55,8 +55,8 @@ export function TemplatesStep() {
             >
               <p
                 className={cn(
-                  'label-mono text-[10px]',
-                  i === 0 ? 'text-priority-medium' : 'text-slate-500',
+                  'label-mono text-[12px]',
+                  i === 0 ? 'text-warning-text' : 'text-slate-600',
                 )}
               >
                 {matchLabel(i)}

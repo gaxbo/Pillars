@@ -68,12 +68,20 @@ function eodSnoozed(now: Date): boolean {
 
 export interface EodState {
   due: boolean
+  /** Oldest first: earlier days' leftovers, then today's. */
   tasks: Task[]
+  /** How many of `tasks` are from before today. */
+  earlier: number
 }
 
+/** How far back the evening check-in reaches. Older than this, the weekly review has it. */
+export const EOD_LOOKBACK_DAYS = 6
+
 /**
- * The end-of-day nudge: past the user's chosen time, with work still open
- * today. Returns the tasks so the caller does not filter twice.
+ * The end-of-day nudge. Today's open tasks are owed a decision once the
+ * user's chosen evening time has passed. Open tasks from earlier days are
+ * owed one straight away: a skipped evening used to leave them on the board
+ * with nobody ever asking about them again.
  */
 export function evaluateEod(
   tasks: Task[],
@@ -81,20 +89,28 @@ export function evaluateEod(
   now = new Date(),
 ): EodState {
   const today: IsoDate = toIso(now)
-  const open = tasks.filter(
-    (t) => t.scheduledDate === today && t.status === 'open',
-  )
+  const oldest: IsoDate = toIso(addDays(now, -EOD_LOOKBACK_DAYS))
+  const open = tasks.filter((t) => t.status === 'open')
+  const earlier = open
+    .filter((t) => t.scheduledDate < today && t.scheduledDate >= oldest)
+    .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate) || a.order - b.order)
+  const todays = open.filter((t) => t.scheduledDate === today)
 
-  if (open.length === 0) return { due: false, tasks: [] }
+  const threshold = parseTime(profile?.eodReminderTime ?? '20:00')
+  const evening = minutesNow(now) >= threshold
+  // Today's tasks only join once it's evening; before that, today isn't over.
+  const owed = evening || previewMode() === 'eod' ? [...earlier, ...todays] : earlier
+  const state = { tasks: owed, earlier: earlier.length }
+
+  if (owed.length === 0) return { due: false, ...state }
 
   // Preview skips the clock and the snooze, but not the 'is there anything
   // to triage' check — an empty triage would show nothing either way.
-  if (previewMode() === 'eod') return { due: true, tasks: open }
+  if (previewMode() === 'eod') return { due: true, ...state }
 
-  if (eodSnoozed(now)) return { due: false, tasks: open }
+  if (eodSnoozed(now)) return { due: false, ...state }
 
-  const threshold = parseTime(profile?.eodReminderTime ?? '20:00')
-  return { due: minutesNow(now) >= threshold, tasks: open }
+  return { due: true, ...state }
 }
 
 export function dismissWeekly(weekStart: IsoDate) {

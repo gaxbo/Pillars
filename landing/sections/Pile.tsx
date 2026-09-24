@@ -269,9 +269,9 @@ function Paper({ list }: { list: List }) {
           {items.map((item) => {
             const [text, done] = typeof item === 'string' ? [item, false] : [item[0], true]
             return (
-              <li key={text} className={cn('flex justify-between gap-[0.6em]', done && 'text-slate-400 line-through')}>
+              <li key={text} className={cn('flex justify-between gap-[0.6em]', done && 'text-slate-600 line-through')}>
                 <span>{text}</span>
-                <span className="text-slate-400">1</span>
+                <span className="text-slate-600">1</span>
               </li>
             )
           })}
@@ -343,7 +343,7 @@ function Paper({ list }: { list: List }) {
               className={cn(
                 'flex items-center gap-[0.6em] text-[1em]',
                 lined && 'leading-[1.75em]',
-                done && 'text-slate-400 line-through',
+                done && 'text-slate-600 line-through',
               )}
             >
               <span

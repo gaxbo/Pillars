@@ -52,10 +52,10 @@ export function DumpStep() {
         placeholder="Start anywhere."
         aria-label="Add a thought"
         className={cn(
-          'w-full rounded-pill border border-slate-200 bg-white px-6 py-4 text-[16px]',
-          'text-slate-900 placeholder:text-slate-400',
+          'w-full rounded-pill border border-slate-500 bg-white px-6 py-4 text-[16px]',
+          'text-slate-900 placeholder:text-slate-500',
           'shadow-[var(--shadow-rest)] outline-none',
-          'focus-visible:border-blue-400 focus-visible:ring-2 focus-visible:ring-blue-400/30',
+          'focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/30',
         )}
       />
 
@@ -76,9 +76,9 @@ export function DumpStep() {
                   onClick={() => removeItem(i)}
                   aria-label={`Remove "${item}"`}
                   className={cn(
-                    'grid size-5 place-items-center rounded-full text-slate-400',
+                    'grid size-5 place-items-center rounded-full text-slate-600',
                     'transition-colors duration-150 hover:bg-slate-100 hover:text-slate-700',
-                    'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-500',
+                    'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-700',
                   )}
                 >
                   <svg viewBox="0 0 14 14" className="size-3" aria-hidden="true">

@@ -88,7 +88,7 @@ export function VerifyCodePage() {
         <AuthSubtitle>Just making sure it&rsquo;s you!</AuthSubtitle>
 
         {email && (
-          <p className="mt-2 text-center text-[13px] text-slate-500">{email}</p>
+          <p className="mt-2 text-center text-[13px] text-slate-600">{email}</p>
         )}
 
         <form
@@ -130,7 +130,7 @@ export function VerifyCodePage() {
           <button
             type="button"
             onClick={() => navigate('/sign-in')}
-            className="text-[13px] text-slate-700 underline underline-offset-2 hover:text-blue-700"
+            className="text-[13px] text-slate-700 underline underline-offset-2 hover:text-blue-800 hover:decoration-2"
           >
             Go back
           </button>
@@ -141,7 +141,7 @@ export function VerifyCodePage() {
             className={cn(
               'text-[13px] underline underline-offset-2',
               cooldown > 0
-                ? 'cursor-not-allowed text-slate-400 no-underline'
+                ? 'cursor-not-allowed text-slate-600 no-underline'
                 : 'text-slate-700 hover:text-blue-700',
             )}
           >

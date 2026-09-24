@@ -114,7 +114,7 @@ export function SignUpPage() {
         <div className="mt-6 text-center">
           <Link
             to="/sign-in"
-            className="text-[13px] text-slate-700 underline underline-offset-2 hover:text-blue-700"
+            className="text-[13px] text-slate-700 underline underline-offset-2 hover:text-blue-800 hover:decoration-2"
           >
             I already have an account
           </Link>

@@ -38,12 +38,12 @@ export function ArchetypeStep() {
               disabled={muted}
               className={cn(
                 'rounded-pillar border p-5 text-left transition-all duration-200',
-                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500',
+                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700',
                 selected
                   ? 'border-blue-400 shadow-[var(--shadow-raised)]'
                   : 'border-white/70',
                 muted && 'cursor-not-allowed opacity-45',
-                !selected && !muted && 'hover:border-blue-200',
+                !selected && !muted && 'hover:border-blue-500 hover:shadow-[var(--shadow-raised)]',
               )}
               style={{
                 background: selected

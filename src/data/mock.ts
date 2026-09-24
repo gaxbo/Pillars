@@ -273,6 +273,23 @@ export const mockRepository: PillarsRepository = {
     return settle(goal)
   },
 
+  async updateGoal(id, patch) {
+    let updated: Goal | undefined
+    goalList = goalList.map((g) => {
+      if (g.id !== id) return g
+      updated = { ...g, ...patch }
+      return updated
+    })
+    if (!updated) throw new Error(`No goal ${id}`)
+    return settle(updated)
+  },
+
+  async deleteGoal(id) {
+    goalList = goalList.filter((g) => g.id !== id)
+    tasks = tasks.map((x) => (x.goalId === id ? { ...x, goalId: null } : x))
+    return settle(undefined)
+  },
+
   async getWeekReview(weekStart) {
     return settle(weekReviews.get(weekStart) ?? null)
   },

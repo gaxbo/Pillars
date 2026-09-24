@@ -49,7 +49,7 @@ export function GoalEditor({
           </span>
 
           {pillar.goals.length === 0 && (
-            <p className="mt-3 text-[13px] text-slate-400">{emptyHint}</p>
+            <p className="mt-3 text-[13px] text-slate-600">{emptyHint}</p>
           )}
 
           <ul className="mt-3 space-y-3">
@@ -64,16 +64,20 @@ export function GoalEditor({
                   aria-label={`Goal for ${pillar.name}`}
                   className={cn(
                     // 16px on a phone: iOS zooms the page into any smaller field.
-                    'min-w-0 flex-1 rounded-pill border border-slate-200 bg-white px-5 py-3 text-[16px] md:text-[15px]',
-                    'text-slate-900 placeholder:italic placeholder:text-slate-400',
+                    'min-w-0 flex-1 rounded-pill border border-slate-500 bg-white px-5 py-3 text-[16px] md:text-[15px]',
+                    'text-slate-900 placeholder:italic placeholder:text-slate-500',
                     'shadow-[var(--shadow-rest)] outline-none',
-                    'focus-visible:border-blue-400 focus-visible:ring-2 focus-visible:ring-blue-400/30',
+                    'focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/30',
                   )}
                 />
 
-                <div className="flex items-center gap-2">
+                <div
+                  role="group"
+                  aria-label={`Times this week: ${goal.title.trim() || `${pillar.name} goal`}`}
+                  className="flex items-center gap-2"
+                >
                   <Stepper
-                    label="Fewer"
+                    label="One fewer time"
                     onClick={() =>
                       onUpdate(pillar.id, goal.id, {
                         target: Math.max(1, goal.target - 1),
@@ -84,12 +88,17 @@ export function GoalEditor({
                     &minus;
                   </Stepper>
 
-                  <span className="label-mono w-10 text-center text-[12px] tabular-nums text-slate-700">
+                  {/* Live, so pressing + or - reads back the new count. */}
+                  <output
+                    aria-live="polite"
+                    className="label-mono w-10 text-center text-[12px] tabular-nums text-slate-700"
+                  >
                     {goal.target}&times;
-                  </span>
+                    <span className="sr-only-text"> a week</span>
+                  </output>
 
                   <Stepper
-                    label="More"
+                    label="One more time"
                     onClick={() =>
                       onUpdate(pillar.id, goal.id, {
                         target: Math.min(99, goal.target + 1),
@@ -102,11 +111,11 @@ export function GoalEditor({
                   <button
                     type="button"
                     onClick={() => onRemove(pillar.id, goal.id)}
-                    aria-label="Remove goal"
+                    aria-label={`Remove goal: ${goal.title.trim() || `${pillar.name} goal`}`}
                     className={cn(
-                      'ml-2 grid size-7 place-items-center rounded-full text-slate-400',
-                      'transition-colors duration-150 hover:bg-white/70 hover:text-priority-high',
-                      'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-500',
+                      'ml-2 grid size-7 place-items-center rounded-full text-slate-600',
+                      'transition-colors duration-150 hover:bg-error-text/10 hover:text-error-text',
+                      'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-700',
                     )}
                   >
                     <svg viewBox="0 0 14 14" className="size-3.5" aria-hidden="true">
@@ -147,11 +156,11 @@ function Stepper({
       {...props}
       className={cn(
         'grid size-7 place-items-center rounded-full border border-slate-200 bg-white/70',
-        'text-[14px] leading-none text-slate-600 transition-colors duration-150',
+        'text-[14px] leading-none text-slate-700 transition-colors duration-150',
         props.disabled
           ? 'cursor-not-allowed opacity-40'
-          : 'hover:border-blue-300 hover:text-blue-700',
-        'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-500',
+          : 'hover:border-blue-500 hover:bg-blue-100 hover:text-blue-900',
+        'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-700',
       )}
     >
       {children}

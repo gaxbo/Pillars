@@ -45,7 +45,7 @@ export function Archetypes() {
         </h2>
         <p className="mt-5 max-w-[52ch] text-[18px] leading-relaxed text-slate-700">
           Pillars starts by asking. Your answer shapes the pillars you begin
-          with, and you can change them anytime.
+          with, and you can rename, add or remove them anytime.
         </p>
       </Reveal>
 
@@ -95,6 +95,7 @@ export function Archetypes() {
         <div
           id="archetype-panel"
           role="tabpanel"
+          tabIndex={0}
           aria-labelledby={`archetype-tab-${archetype.id}`}
           className="rounded-modal border px-6 py-8 sm:px-10 sm:py-10"
           style={{

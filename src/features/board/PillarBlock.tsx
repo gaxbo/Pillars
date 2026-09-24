@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import type { IsoDate, Pillar, Task } from '@/data/types'
 import { ease, spring } from '@/design/motion'
 import { cn } from '@/lib/cn'
+import { fromIso } from '@/lib/date'
 import { TaskRow } from './TaskRow'
 import { cellId } from './useBoardStore'
 
@@ -43,6 +44,12 @@ export const PillarBlock = memo(function PillarBlock({
   const id = cellId(date, pillar.id)
   const { setNodeRef, isOver } = useDroppable({ id })
   const active = tasks.length > 0
+  // Seven columns each have a Health: say which day this one is.
+  const spoken = fromIso(date).toLocaleDateString('en-US', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'short',
+  })
 
   // An empty pillar is the natural place to click to add work, so the whole
   // block is the target rather than a hover-only "+".
@@ -54,13 +61,16 @@ export const PillarBlock = memo(function PillarBlock({
         transition={spring.gentle}
         type="button"
         onClick={() => onAdd(date, pillar.id)}
-        aria-label={`Add a task to ${pillar.name}`}
+        aria-label={`Add a task to ${pillar.name}, ${spoken}`}
         className={cn(
           'group/pillar flex w-full items-center justify-between gap-2 rounded-pillar',
           'border border-dashed px-2.5 py-3 text-left md:py-1.5',
-          'transition-colors duration-200',
-          'hover:border-blue-300 hover:bg-white/70',
-          'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-500',
+          'transition-colors duration-150',
+          // Hover fills and firms the dashed outline, so the block reads as
+          // a button the moment the pointer is on it. Important, to beat the
+          // resting surface set inline below.
+          'hover:border-solid hover:border-blue-500! hover:bg-blue-50!',
+          'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-700',
           isOver && 'border-blue-400 ring-2 ring-blue-400/50',
         )}
         style={{
@@ -68,12 +78,15 @@ export const PillarBlock = memo(function PillarBlock({
           borderColor: isOver ? undefined : 'var(--border-inactive)',
         }}
       >
-        <span className="label-mono truncate text-[10.5px] text-slate-500 transition-colors group-hover/pillar:text-blue-700">
+        <span className="label-mono truncate text-[12px] text-slate-600 transition-colors group-hover/pillar:text-blue-800">
           {pillar.name}
         </span>
         <span
           aria-hidden="true"
-          className="shrink-0 text-[13px] leading-none text-slate-400 transition-colors group-hover/pillar:text-blue-500"
+          className={cn(
+            'grid size-4 shrink-0 place-items-center rounded-full text-[13px] leading-none text-slate-500',
+            'transition-colors group-hover/pillar:bg-blue-700 group-hover/pillar:text-white',
+          )}
         >
           +
         </span>
@@ -95,21 +108,21 @@ export const PillarBlock = memo(function PillarBlock({
       style={{ background: 'var(--gradient-surface)' }}
     >
       <header className="flex items-center justify-between gap-2">
-        <h3 className="label-mono truncate text-[10.5px] text-blue-800">
+        <h3 className="label-mono truncate text-[12px] text-blue-800">
           {pillar.name}
         </h3>
         <button
           type="button"
           onClick={() => onAdd(date, pillar.id)}
-          aria-label={`Add a task to ${pillar.name}`}
-          // Finger-sized on a phone; the negative margin keeps the header's
-          // height from growing with it.
+          aria-label={`Add a task to ${pillar.name}, ${spoken}`}
+          // Finger-sized on a phone, 24px (WCAG's minimum target) from md
+          // up; the negative margins keep the header's height from growing.
           className={cn(
             'grid size-8 -my-2 -mr-1.5 shrink-0 place-items-center rounded-full text-[17px] leading-none',
-            'md:m-0 md:size-4 md:text-[13px]',
-            'text-blue-600/70 transition-all duration-150',
-            'hover:bg-white/70 hover:text-blue-600',
-            'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-500',
+            'md:-my-1 md:-mr-1 md:size-6 md:text-[14px]',
+            'text-blue-700 transition-all duration-150',
+            'hover:bg-blue-700 hover:text-white',
+            'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-700',
             'opacity-0 group-hover/pillar:opacity-100 focus-visible:opacity-100',
             '[@media(hover:none)]:opacity-60',
           )}

@@ -9,8 +9,10 @@ import {
   pointerWithin,
   useSensor,
   useSensors,
+  type Announcements,
   type CollisionDetection,
   type DragEndEvent,
+  type UniqueIdentifier,
   type DragStartEvent,
   type Modifier,
 } from '@dnd-kit/core'
@@ -18,7 +20,7 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { getEventCoordinates } from '@dnd-kit/utilities'
 import type { IsoDate, Task } from '@/data/types'
 import { cn } from '@/lib/cn'
-import { fromIso, startOfWeek, toIso, weekTitle } from '@/lib/date'
+import { dayDateLabel, fromIso, startOfWeek, toIso, weekTitle } from '@/lib/date'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import { useNavigate } from 'react-router-dom'
 import { BoardHeader } from './BoardHeader'
@@ -26,15 +28,17 @@ import { DayColumn } from './DayColumn'
 import { DayStrip } from './DayStrip'
 import { EodToast } from '@/features/eod/EodToast'
 import { EodTriage } from '@/features/eod/EodTriage'
-import { snoozeEod } from '@/features/reminders/reminders'
+import { dismissWeekly, snoozeEod } from '@/features/reminders/reminders'
 import { useReminders } from '@/features/reminders/useReminders'
 import { TaskDialog, type DialogTarget } from './TaskDialog'
+import { SaveStatusNote, UndoToast, WeeklyBanner } from './BoardNotices'
 import { WeekPanel } from './WeekPanel'
 import {
   cellId,
   parseCellId,
   parseDayDropId,
   selectWeek,
+  planningLabel,
   useBoardStore,
 } from './useBoardStore'
 
@@ -71,6 +75,17 @@ const belowFinger: Modifier = ({ activatorEvent, draggingNodeRect, transform }) 
   return { ...transform, x: x - left, y: fingerY + 28 - top }
 }
 
+const screenReaderInstructions = {
+  draggable:
+    'Press Enter to open this task. To move it, press Space, use the arrow keys to carry it to another pillar or day, then press Space again to drop it, or Escape to cancel.',
+}
+
+/** "Wednesday 23 Sep", for announcements. */
+function spokenDay(iso: IsoDate): string {
+  const date = fromIso(iso)
+  return `${date.toLocaleDateString('en-US', { weekday: 'long' })} ${dayDateLabel(date)}`
+}
+
 export function BoardPage() {
   // Narrow subscriptions: opening the panel must not re-render the whole board.
   const anchor = useBoardStore((s) => s.anchor)
@@ -79,7 +94,6 @@ export function BoardPage() {
   const tasks = useBoardStore((s) => s.tasks)
   const loading = useBoardStore((s) => s.loading)
   const panelOpen = useBoardStore((s) => s.panelOpen)
-  const planningTime = useBoardStore((s) => s.planningTime)
 
   const load = useBoardStore((s) => s.load)
   const shiftWeek = useBoardStore((s) => s.shiftWeek)
@@ -90,22 +104,32 @@ export function BoardPage() {
   const placeTask = useBoardStore((s) => s.placeTask)
   const editTask = useBoardStore((s) => s.editTask)
   const removeTask = useBoardStore((s) => s.removeTask)
+  const undoDelete = useBoardStore((s) => s.undoDelete)
+  const retrySaves = useBoardStore((s) => s.retrySaves)
+  const pendingDelete = useBoardStore((s) => s.pendingDelete)
+  const saveStatus = useBoardStore((s) => s.saveStatus)
+  const range = useBoardStore((s) => s.range)
+  const profile = useBoardStore((s) => s.profile)
 
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dialog, setDialog] = useState<DialogTarget | null>(null)
   const [triageOpen, setTriageOpen] = useState(false)
   const [eodHidden, setEodHidden] = useState(false)
+  // Bumped when a check-in closes, so the reminders re-read what's left.
+  const [eodRefresh, setEodRefresh] = useState(0)
+  const [weeklyHidden, setWeeklyHidden] = useState(false)
 
   const navigate = useNavigate()
   // Same 48rem as Tailwind's `md`, which the header's own classes switch on.
   const wide = useMediaQuery('(min-width: 48rem)')
-  const { eod, weeklyDue } = useReminders(tasks, !loading)
-
-  // The weekly report card is a destination, not a banner — the design
-  // sends people straight there, and that page carries its own way out.
-  useEffect(() => {
-    if (weeklyDue) navigate('/weekly-review')
-  }, [weeklyDue, navigate])
+  const { eod, weeklyDue } = useReminders(
+    tasks,
+    !loading,
+    range,
+    eodRefresh,
+    pendingDelete?.id ?? null,
+  )
+  const planningTime = planningLabel(profile)
 
   useEffect(() => {
     void load()
@@ -116,7 +140,13 @@ export function BoardPage() {
     useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
     // On touch, press and hold to lift, so a swipe down the day still scrolls.
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    // Space lifts and drops. Enter is left to the button, so it opens the
+    // task: with dnd-kit's default, Enter started a drag instead, and there
+    // was no way to edit a task from the keyboard.
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+      keyboardCodes: { start: ['Space'], cancel: ['Escape'], end: ['Space', 'Enter'] },
+    }),
   )
 
   // Keyed on the week, not the selected day, so picking a day on a phone
@@ -203,6 +233,42 @@ export function BoardPage() {
     [byCell, placeTask, tasks],
   )
 
+  /**
+   * What a screen reader hears while a task is carried by keyboard: the
+   * task's name and, at every step, the pillar and day under it. dnd-kit's
+   * defaults only say "draggable item 3 is over droppable area 12".
+   */
+  const announcements = useMemo<Announcements>(() => {
+    const title = (id: UniqueIdentifier) =>
+      tasks.find((t) => t.id === String(id))?.title ?? 'Task'
+    const place = (id: UniqueIdentifier | undefined) => {
+      if (id === undefined) return 'nowhere'
+      const raw = String(id)
+      const day = parseDayDropId(raw)
+      if (day) return spokenDay(day)
+      // An empty cell, or another task, which stands for its own cell.
+      const cell = raw.includes(':')
+      const task = cell ? undefined : tasks.find((t) => t.id === raw)
+      if (!cell && !task) return 'another task'
+      const { date, pillarId } = task
+        ? { date: task.scheduledDate, pillarId: task.pillarId }
+        : parseCellId(raw)
+      const pillar = pillars.find((p) => p.id === pillarId)?.name ?? 'a pillar'
+      return `${pillar}, ${spokenDay(date)}`
+    }
+    return {
+      onDragStart: ({ active }) => `Picked up ${title(active.id)}.`,
+      onDragOver: ({ active, over }) =>
+        over ? `${title(active.id)} is over ${place(over.id)}.` : undefined,
+      onDragEnd: ({ active, over }) =>
+        over
+          ? `Moved ${title(active.id)} to ${place(over.id)}.`
+          : `${title(active.id)} was dropped back where it was.`,
+      onDragCancel: ({ active }) =>
+        `Cancelled. ${title(active.id)} is back where it was.`,
+    }
+  }, [tasks, pillars])
+
   const handleAdd = useCallback((date: IsoDate, pillarId: string) => {
     setDialog({ mode: 'create', date, pillarId })
   }, [])
@@ -237,6 +303,9 @@ export function BoardPage() {
     // A phone's page grows with its one day so the strip can stay stuck to
     // the top; wider screens fill the viewport so columns stretch into lanes.
     <div className={cn('flex flex-col', wide ? 'h-full' : 'min-h-full')}>
+      <a href="#board" className="skip-link">
+        Skip to the week
+      </a>
       <BoardHeader
         title={weekTitle(days)}
         shortTitle={weekTitle(days, true)}
@@ -244,7 +313,25 @@ export function BoardPage() {
         onNext={() => shiftWeek(1)}
         onToday={goToToday}
         onOpenWeek={() => setPanelOpen(true)}
+        weekOpen={panelOpen}
       />
+
+      {weeklyDue && !weeklyHidden && (
+        <WeeklyBanner
+          onPlan={() => navigate('/weekly-review')}
+          onLater={() => {
+            // Once a week: "Not now" holds until next week's planning time.
+            dismissWeekly(toIso(startOfWeek(new Date())))
+            setWeeklyHidden(true)
+          }}
+        />
+      )}
+
+      <SaveStatusNote status={saveStatus} onRetry={retrySaves} />
+
+      {pendingDelete && !triageOpen && (
+        <UndoToast task={pendingDelete} onUndo={undoDelete} />
+      )}
 
       <WeekPanel
         open={panelOpen}
@@ -262,9 +349,10 @@ export function BoardPage() {
         goals={goals}
       />
 
-      {eod.due && !eodHidden && !triageOpen && (
+      {eod.due && !eodHidden && !triageOpen && !pendingDelete && (
         <EodToast
           count={eod.tasks.length}
+          earlier={eod.earlier}
           onOpen={() => setTriageOpen(true)}
           onLater={() => {
             snoozeEod()
@@ -277,17 +365,23 @@ export function BoardPage() {
         open={triageOpen}
         tasks={eod.tasks}
         pillars={pillars}
-        onDone={toggleTask}
-        onTomorrow={(id, date) => editTask(id, { scheduledDate: date })}
-        onDelete={removeTask}
+        onDone={(task) =>
+          editTask(task.id, { status: 'done', completedAt: new Date().toISOString() })
+        }
+        onTomorrow={(task, date) => editTask(task.id, { scheduledDate: date })}
+        onDelete={(task) => removeTask(task.id, task)}
+        onUndo={undoDelete}
+        undoableId={pendingDelete?.id ?? null}
         onClose={() => {
           setTriageOpen(false)
           setEodHidden(true)
+          setEodRefresh((n) => n + 1)
         }}
       />
 
       <DndContext
         sensors={sensors}
+        accessibility={{ screenReaderInstructions, announcements }}
         collisionDetection={wide ? closestCorners : byFinger}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
@@ -305,13 +399,16 @@ export function BoardPage() {
         )}
 
         <main
+          id="board"
+          tabIndex={-1}
+          aria-label="Your week"
           className={cn(
-            'min-h-0 flex-1 px-4 pb-8 sm:px-6 md:px-8',
+            'min-h-0 flex-1 px-4 pb-8 outline-none sm:px-6 md:px-8',
             !wide && 'flex flex-col pt-3',
           )}
         >
           {loading && pillars.length === 0 ? (
-            <p className="label-mono px-1 pt-6 text-[11px] text-slate-400">
+            <p role="status" className="label-mono px-1 pt-6 text-[12px] text-slate-600">
               Loading your week…
             </p>
           ) : wide ? (

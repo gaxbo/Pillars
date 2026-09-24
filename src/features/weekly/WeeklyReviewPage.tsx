@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GoalEditor } from '@/features/goals/GoalEditor'
 import { PrimaryButton, QuietLink } from '@/features/onboarding/OnboardingUI'
@@ -16,10 +16,21 @@ export function WeeklyReviewPage() {
     void load()
   }, [load])
 
+  // Moving between the report and the goals replaces the button that was
+  // pressed, so focus goes to the new stage's heading. Not on first load.
+  const firstStage = useRef(true)
+  useEffect(() => {
+    if (firstStage.current) {
+      firstStage.current = false
+      return
+    }
+    document.querySelector<HTMLElement>('[data-step-heading]')?.focus({ preventScroll: true })
+  }, [stage])
+
   if (loading) {
     return (
       <div className="flex min-h-full items-center justify-center">
-        <p className="label-mono text-[11px] text-slate-400">
+        <p role="status" className="label-mono text-[12px] text-slate-600">
           Adding up your week…
         </p>
       </div>
@@ -45,8 +56,8 @@ function ReportStage() {
   const navigate = useNavigate()
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-6 pb-16 pt-12 sm:px-12">
-      <h1 className="animate-rise text-[32px] font-bold leading-tight tracking-tight text-slate-900 sm:text-[38px]">
+    <main className="mx-auto w-full max-w-5xl px-6 pb-16 pt-12 sm:px-12">
+      <h1 tabIndex={-1} data-step-heading className="animate-rise outline-none text-[32px] font-bold leading-tight tracking-tight text-slate-900 sm:text-[38px]">
         It&rsquo;s time to plan your next week.
       </h1>
       <p className="animate-rise delay-1 mt-3 text-[16px] text-slate-700">
@@ -76,7 +87,7 @@ function ReportStage() {
 
         {summaries.length === 0 ? (
           <p
-            className="mt-4 border-t pt-5 text-[14px] text-slate-500"
+            className="mt-4 border-t pt-5 text-[14px] text-slate-600"
             style={{ borderColor: 'var(--border-hairline)' }}
           >
             No goals were set for last week. This is a good week to start.
@@ -102,7 +113,7 @@ function ReportStage() {
           Not now
         </QuietLink>
       </div>
-    </div>
+    </main>
   )
 }
 
@@ -144,7 +155,7 @@ function SummaryRow({ summary }: { summary: GoalSummary }) {
       <p
         className={cn(
           'shrink-0 whitespace-nowrap pt-1 text-[13px] tabular-nums',
-          met ? 'font-medium text-priority-low' : 'text-slate-500',
+          met ? 'font-medium text-success-text' : 'text-slate-600',
         )}
       >
         {summary.planned} planned, {summary.completed} completed
@@ -175,8 +186,8 @@ function GoalsStage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-6 pb-16 pt-12 sm:px-12">
-      <h1 className="animate-rise text-[32px] font-bold leading-tight tracking-tight text-slate-900 sm:text-[38px]">
+    <main className="mx-auto w-full max-w-5xl px-6 pb-16 pt-12 sm:px-12">
+      <h1 tabIndex={-1} data-step-heading className="animate-rise outline-none text-[32px] font-bold leading-tight tracking-tight text-slate-900 sm:text-[38px]">
         Set your goals
       </h1>
       <p className="animate-rise delay-1 mb-8 mt-3 text-[16px] text-slate-700">
@@ -194,7 +205,7 @@ function GoalsStage() {
       {error && (
         <p
           role="alert"
-          className="mt-4 rounded-pillar border border-priority-high/20 bg-priority-high/5 px-4 py-2.5 text-[13px] text-priority-high"
+          className="mt-4 rounded-pillar border border-error-text/25 bg-error-text/5 px-4 py-2.5 text-[13px] text-error-text"
         >
           {error}
         </p>
@@ -208,6 +219,6 @@ function GoalsStage() {
           Go back
         </QuietLink>
       </div>
-    </div>
+    </main>
   )
 }

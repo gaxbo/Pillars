@@ -70,12 +70,13 @@ export function PlanTimeStep() {
       </StepHeading>
 
       <section>
-        <h2 className="label-mono pb-3 text-[11px] text-slate-600">Day</h2>
-        <div className="flex flex-wrap gap-2">
+        <h2 id="plan-day" className="label-mono pb-3 text-[12px] text-slate-600">Day</h2>
+        <div role="group" aria-labelledby="plan-day" className="flex flex-wrap gap-2">
           {DAYS.map((day) => (
             <Pill
               key={day.value}
               selected={weekday === day.value}
+              aria-label={DAY_NAMES[day.value]}
               onClick={() => setWeekday(day.value)}
             >
               {day.label}
@@ -85,8 +86,8 @@ export function PlanTimeStep() {
       </section>
 
       <section className="pt-8">
-        <h2 className="label-mono pb-3 text-[11px] text-slate-600">Time</h2>
-        <div className="flex flex-wrap gap-2">
+        <h2 id="plan-time" className="label-mono pb-3 text-[12px] text-slate-600">Time</h2>
+        <div role="group" aria-labelledby="plan-time" className="flex flex-wrap gap-2">
           <Select
             label="Hour"
             value={String(hour12)}
@@ -124,7 +125,7 @@ export function PlanTimeStep() {
       {error && (
         <p
           role="alert"
-          className="mt-4 rounded-pillar border border-priority-high/20 bg-priority-high/5 px-4 py-2.5 text-[13px] text-priority-high"
+          className="mt-4 rounded-pillar border border-error-text/25 bg-error-text/5 px-4 py-2.5 text-[13px] text-error-text"
         >
           {error}
         </p>
@@ -153,20 +154,12 @@ function Pill({
       aria-pressed={selected}
       {...props}
       className={cn(
-        'rounded-pill border px-5 py-2 text-[14px] transition-all duration-150',
-        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500',
+        'rounded-pill border px-5 py-2 text-[14px]',
+        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700',
         selected
-          ? 'border-transparent font-semibold text-white'
-          : 'border-blue-100 text-slate-700 hover:border-blue-300',
+          ? 'btn-primary border-transparent font-semibold'
+          : 'border-blue-200 bg-blue-50 text-slate-700 transition-colors duration-150 hover:border-blue-500 hover:bg-blue-100 hover:text-blue-900',
       )}
-      style={
-        selected
-          ? {
-              background: 'var(--gradient-primary)',
-              boxShadow: 'var(--shadow-raised)',
-            }
-          : { background: 'var(--color-blue-50)' }
-      }
     >
       {children}
     </button>
@@ -191,9 +184,9 @@ function Select({
       onChange={(e) => onChange(e.target.value)}
       className={cn(
         // 16px on a phone: iOS zooms the page into any smaller field.
-        'rounded-pill border border-blue-100 px-5 py-2 text-[16px] text-slate-800 md:text-[14px]',
-        'outline-none transition-colors duration-150 hover:border-blue-300',
-        'focus-visible:border-blue-400 focus-visible:ring-2 focus-visible:ring-blue-400/30',
+        'rounded-pill border border-slate-500 px-5 py-2 text-[16px] text-slate-800 md:text-[14px]',
+        'outline-none transition-colors duration-150 hover:border-blue-600',
+        'focus-visible:border-blue-600 focus-visible:ring-2 focus-visible:ring-blue-600/30',
       )}
       style={{ background: 'var(--color-blue-50)' }}
     >

@@ -20,6 +20,9 @@ interface DayColumnProps {
 
 const EMPTY: Task[] = []
 
+const fullDayName = (date: Date) =>
+  date.toLocaleDateString('en-US', { weekday: 'long' })
+
 /**
  * A column is a real surface that fills its lane. In the original screens a
  * day was a heavy black rule with bars floating under it, so columns never
@@ -41,16 +44,22 @@ export const DayColumn = memo(function DayColumn({
 
   return (
     <section
-      aria-label={`${dayLabel(date)} ${dayDateLabel(date)}`}
+      aria-labelledby={`day-${iso}`}
+      aria-current={today ? 'date' : undefined}
       className={cn(
         'flex h-full min-w-0 flex-col rounded-column p-2.5',
         'transition-colors duration-200',
         today && 'ring-1 ring-blue-300/70',
-        past && !today && 'opacity-[0.7]',
         className,
       )}
       style={{
-        background: today ? 'var(--surface-column-hover)' : 'var(--surface-column)',
+        // A past day recedes through its surface, not an opacity on the
+        // whole column: fading the column faded its text under AA contrast.
+        background: today
+          ? 'var(--surface-column-hover)'
+          : past
+            ? 'var(--surface-inactive)'
+            : 'var(--surface-column)',
         boxShadow: today ? 'var(--shadow-raised)' : 'var(--shadow-rest)',
       }}
     >
@@ -58,29 +67,38 @@ export const DayColumn = memo(function DayColumn({
         className="mb-2.5 flex items-baseline justify-between gap-2 border-b pb-2"
         style={{ borderColor: 'var(--border-hairline)' }}
       >
-        <span
+        {/* A heading per day, so a screen reader can jump day to day. */}
+        <h2
+          id={`day-${iso}`}
           className={cn(
             'text-[15px] font-semibold tracking-tight',
-            today ? 'text-blue-700' : 'text-slate-900',
+            today ? 'text-blue-800' : past ? 'text-slate-700' : 'text-slate-900',
           )}
         >
+          <span className="sr-only-text">{fullDayName(date)} </span>
           {dayDateLabel(date)}
-        </span>
-        <span className="flex items-baseline gap-2">
+          {today && <span className="sr-only-text">, today</span>}
+        </h2>
+        <span className="flex items-baseline gap-2" aria-hidden="true">
           {dayStats && dayStats.total > 0 && (
-            <span className="label-mono text-[9.5px] tabular-nums text-slate-400">
+            <span className="label-mono text-[12px] tabular-nums text-slate-600">
               {dayStats.done}/{dayStats.total}
             </span>
           )}
           <span
             className={cn(
               'text-[12px]',
-              today ? 'font-medium text-blue-600' : 'text-slate-500',
+              today ? 'font-medium text-blue-800' : 'text-slate-600',
             )}
           >
             {today ? 'Today' : dayLabel(date)}
           </span>
         </span>
+        {dayStats && dayStats.total > 0 && (
+          <span className="sr-only-text">
+            {dayStats.done} of {dayStats.total} tasks done
+          </span>
+        )}
       </header>
 
       <div className="flex flex-col gap-1.5">

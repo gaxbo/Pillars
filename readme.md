@@ -95,7 +95,14 @@ stays private.
   The script refuses to capture text containing an em or en dash.
 - **Deploying:** a second Vercel project from this same repo. Build command
   `npm run build:landing`, output directory `dist-landing`, env vars
-  `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+  `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and `VITE_APP_URL` (where
+  the nav's "Early access sign in" sends beta members).
+- **Two pages, no router.** `/roadmap` is `RoadmapPage`, anything else is the
+  landing; `landing/main.tsx` picks by path, and `vercel.json` already serves
+  `index.html` for every path.
+- **Research the page leans on** lives in `landing/sources.ts`, linked from
+  "Pillars starts from the other end". Change the copy and the source
+  together.
 - **Design rules:** built against the `design-taste-frontend` skill. No em
   dashes anywhere, one button label for one action ("Join the list"), real
   screenshots rather than mock-ups, no section eyebrows, every section a
