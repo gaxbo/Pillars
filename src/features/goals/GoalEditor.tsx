@@ -1,3 +1,4 @@
+import { MAX_LENGTH } from '@/data/limits'
 import { cn } from '@/lib/cn'
 import { InlineAction } from '@/features/onboarding/OnboardingUI'
 
@@ -57,6 +58,7 @@ export function GoalEditor({
               <li key={goal.id} className="flex flex-wrap items-center gap-3">
                 <input
                   value={goal.title}
+                  maxLength={MAX_LENGTH.goalTitle}
                   onChange={(e) =>
                     onUpdate(pillar.id, goal.id, { title: e.target.value })
                   }

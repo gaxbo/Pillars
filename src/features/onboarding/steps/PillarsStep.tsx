@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { MAX_LENGTH } from '@/data/limits'
 import { cn } from '@/lib/cn'
 import {
   Counter,
@@ -57,6 +58,7 @@ export function PillarsStep() {
           >
             <input
               value={pillar.name}
+              maxLength={MAX_LENGTH.pillarName}
               onChange={(e) => rename(pillar.id, e.target.value)}
               aria-label="Pillar name"
               className={cn(
@@ -98,6 +100,7 @@ export function PillarsStep() {
           <input
             autoFocus
             value={draft}
+            maxLength={MAX_LENGTH.pillarName}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') commitNew()

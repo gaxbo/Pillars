@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { MAX_LENGTH } from '@/data/limits'
 import type { Goal, IsoDate, Pillar, Priority } from '@/data/types'
 import { addDays, dayDateLabel, dayLabel, fromIso, startOfWeek, toIso } from '@/lib/date'
 import { cn } from '@/lib/cn'
@@ -295,6 +296,7 @@ function TaskDialogInner({
           <input
             ref={inputRef}
             value={title}
+            maxLength={MAX_LENGTH.taskTitle}
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={(e) => {
               if (e.key !== 'Enter') return

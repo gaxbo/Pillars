@@ -2,8 +2,12 @@
 
 ## Blocked on a dashboard change
 
-- [ ] **Run `supabase/migrations/0003_waitlist.sql`.** Until it runs, the
-      landing page's form shows "Something went wrong" for every address.
+- [ ] **Run `supabase/migrations/0003_waitlist.sql`, then
+      `0004_ownership_and_limits.sql`.** Until `0003` runs, the landing
+      page's form shows "Something went wrong" for every address. `0004` is
+      the database half of the Security section below; if it stops on a
+      constraint, an existing row already breaks that rule and the error
+      names it.
 
 - [ ] **Set the email code length to 6.** Supabase → Authentication → Sign In /
       Providers → Email → *Email OTP Length*. The project sends 8-digit codes,
@@ -11,7 +15,9 @@
       sign-up is stuck on that screen until this changes.
 - [ ] Add the deployed origin as a redirect URL once there is one
       (Authentication → URL Configuration). `http://localhost:5173` is enough
-      for now.
+      for now. Add exact addresses: a wildcard like `https://*.vercel.app/**`
+      would let any Vercel site receive sign-in and reset links, tokens
+      included.
 - [ ] **Move sign-up email off personal Gmail before real launch.** Custom SMTP
       is `smtp.gmail.com` with an App Password: fine for testers (~500/day),
       but mail comes from a personal address. A domain plus Resend or similar.
@@ -29,6 +35,53 @@ a goal, all with the new user's `user_id`; anon sees none of those rows.
 Signing in unconfirmed routes to `/verify`. Delete the test user
 (Authentication → Users) when it's no longer useful.
 
+## Security
+
+Reviewed 2026-09-24. No secrets in git history, `npm audit` clean, every
+table behind row level security. The code fixes below are done and tested;
+what's left is mostly dashboard settings.
+
+- [x] **Setting a new password needs the reset link.** `/reset-password`
+      shows its form only to the session the emailed link created, and
+      `updatePassword` refuses any other, so an unlocked laptop isn't enough
+      to take an account. Checked in Chrome against a mocked Supabase: from
+      the link, form; signed in normally, signed out, or a faked link, none.
+- [x] **Rows can only point at their owner's pillars and goals** (`0004`).
+      Before, another account's pillar id was enough to add a goal to it,
+      which blocked the owner's own goal for that week.
+- [x] **Length limits** on name (100), task notes (2,000), goal description
+      (500), unit (30), timezone and archetypes (`0004`). The sign-up name
+      field stops at 100.
+- [x] **The waitlist no longer says who's on it.** It used to answer "already
+      on the list" to anyone. `join_waitlist()` (`0003`) answers the same
+      either way, and the table itself is closed to the API.
+- [x] **Security headers** in `vercel.json`, which both Vercel projects
+      read: a Content-Security-Policy (scripts from the site itself, network
+      calls to Supabase only), no framing by other sites, `nosniff`, and a
+      referrer policy. Every app and landing screen loads with no violations.
+- [ ] **Turn on Secure password change** (Authentication → Sign In /
+      Providers → Email). The page's check covers the app; this covers the
+      API, which anyone holding a session can call directly.
+- [ ] **Set the minimum password length to 8** on the same page. The app
+      asks for 8, but Supabase defaults to 6 and a direct API call skips the
+      app.
+- [ ] **CAPTCHA on sign-up** (Authentication → Attack Protection; Cloudflare
+      Turnstile is free), then pass its token in `signUp`, `signIn` and
+      `sendReset`. Until then a script can make the Gmail account send
+      confirmation mail to anyone. Also keep `{{ .Data.full_name }}` out of
+      the email templates: `0004` caps the name only when an account is
+      created.
+- [ ] **Rate-limit the waitlist** (moved from Landing page). Anyone can call
+      `join_waitlist()`. Fine at this size; before it matters, put it behind
+      an Edge Function with Turnstile, and forward to the email tool from
+      there.
+- [ ] **Run the Security Advisor** (Advisors → Security Advisor) once `0003`
+      and `0004` are in. It checks the live database, which the repo can't.
+
+The CSP allows network calls to `https://*.supabase.co` and nothing else.
+Realtime would need `wss://*.supabase.co`, and any new outside script, font
+or analytics tool has to be added to `vercel.json` too, or browsers block it.
+
 ## Known rough edges
 
 - [ ] **Task dialog drops one frame on first open per page load** (~42ms,
@@ -44,6 +97,10 @@ Signing in unconfirmed routes to `/verify`. Delete the test user
       differ.
 - [ ] **Tablet portrait (768–1279px)** still gets the 3-column grid, so the
       week wraps as 3 / 3 / 1. Works, but it's the next layout worth a look.
+- [x] **Name fields stop at the database's limits.** Done (2026-09-24):
+      pillar names (40), goal titles (80) and task titles (200) failed to
+      save past `0001`'s caps; every input for them now stops there, from one
+      list in `src/data/limits.ts`.
 
 ## Landing page
 
@@ -61,9 +118,6 @@ Signing in unconfirmed routes to `/verify`. Delete the test user
       table, or turn off sign-ups in Supabase and invite users).
 - [ ] **Pick an email tool** and import the list (Table Editor → Export CSV),
       or forward new sign-ups to it automatically.
-- [ ] **Rate-limit the waitlist.** Anyone can insert straight into the table.
-      Fine at this size; before it matters, put inserts behind an Edge
-      Function with Turnstile, and forward to the email tool from there.
 - [ ] An Open Graph image, once there's a domain to host it on.
 
 ## Accessibility

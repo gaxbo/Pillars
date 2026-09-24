@@ -9,6 +9,12 @@ interface AuthState {
   loading: boolean
   /** Set when Supabase isn't configured — the app runs on mock data. */
   offline: boolean
+  /**
+   * True once this tab has come in through the emailed reset link. Setting a
+   * new password needs it: any other session would let whoever is at the
+   * keyboard change the password without knowing the current one.
+   */
+  recovering: boolean
 
   init: () => () => void
   signIn: (email: string, password: string) => Promise<void>
@@ -33,11 +39,12 @@ function fail(error: { message: string } | null) {
   if (error) throw new Error(error.message)
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   session: null,
   user: null,
   loading: true,
   offline: !isSupabaseConfigured,
+  recovering: false,
   pendingEmail: readPendingEmail(),
 
   init() {
@@ -46,12 +53,32 @@ export const useAuthStore = create<AuthState>((set) => ({
       return () => {}
     }
 
-    void supabase.auth.getSession().then(({ data }) => {
-      set({ session: data.session, user: data.session?.user ?? null, loading: false })
-    })
+    // initialize() has finished reading any link in the URL by the time it
+    // resolves; its error says whether the link's tokens were good.
+    void Promise.all([supabase.auth.initialize(), supabase.auth.getSession()]).then(
+      ([{ error }, { data }]) => {
+        const fromLink = resetLinkPending && !error && data.session !== null
+        resetLinkPending = false
+        set((s) => ({
+          session: data.session,
+          user: data.session?.user ?? null,
+          loading: false,
+          recovering: s.recovering || fromLink,
+        }))
+      },
+    )
 
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      set({ session, user: session?.user ?? null, loading: false })
+    // Loading ends above, not here: an early event would end it before
+    // recovery is known, and the reset page would flash "expired".
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      set({
+        session,
+        user: session?.user ?? null,
+        // Only the reset link starts recovery; token refreshes and the like
+        // leave it as it was.
+        ...(event === 'PASSWORD_RECOVERY' && { recovering: true }),
+        ...(event === 'SIGNED_OUT' && { recovering: false }),
+      })
     })
 
     return () => data.subscription.unsubscribe()
@@ -116,7 +143,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   async signOut() {
     const { error } = await requireClient().auth.signOut()
     fail(error)
-    set({ session: null, user: null })
+    set({ session: null, user: null, recovering: false })
   },
 
   async sendReset(email) {
@@ -127,10 +154,26 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   async updatePassword(password) {
+    if (!get().recovering) {
+      throw new Error('Open the link in your reset email to set a new password.')
+    }
     const { error } = await requireClient().auth.updateUser({ password })
     fail(error)
+    // One link, one change.
+    set({ recovering: false })
   },
 }))
+
+/**
+ * Read once, before Supabase takes the reset link's tokens out of the URL.
+ * Its PASSWORD_RECOVERY event says the same, but only a tick after the
+ * session lands. Faking the hash gains nothing: without tokens Supabase
+ * accepts, `initialize()` reports an error and recovery never starts.
+ */
+let resetLinkPending = (() => {
+  const params = new URLSearchParams(window.location.hash.slice(1))
+  return params.get('type') === 'recovery' && params.has('access_token')
+})()
 
 const PENDING_KEY = 'pillars.auth.pendingEmail'
 

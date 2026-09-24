@@ -86,10 +86,12 @@ builds on its own (`vite.landing.config.ts`), so it can go live while the app
 stays private.
 
 - **The waitlist** is the `waitlist` table from
-  `supabase/migrations/0003_waitlist.sql`. Anyone can add an address; nobody
-  can read the list through the API. Export it from Table Editor → `waitlist`
-  → Export to CSV, then import into whichever email tool you pick. `source`
-  says which form (hero or footer) each address came from.
+  `supabase/migrations/0003_waitlist.sql`. Anyone can add an address through
+  `join_waitlist()`, which answers the same whether or not the address was
+  already there; nobody can read the list through the API. Export it from
+  Table Editor → `waitlist` → Export to CSV, then import into whichever email
+  tool you pick. `source` says which form (hero or footer) each address came
+  from.
 - **Screenshots** in `landing/public/shots/` are real captures of the app on
   sample data. Re-run `npm run shots:landing` after changing the app's look.
   The script refuses to capture text containing an em or en dash.

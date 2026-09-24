@@ -1,12 +1,14 @@
 /**
- * Adds an address to the `waitlist` table (supabase/migrations/0003).
+ * Adds an address to the waitlist through `join_waitlist()`
+ * (supabase/migrations/0003).
  *
- * A plain fetch rather than supabase-js: one insert doesn't justify shipping
- * the client library to every visitor. The table accepts inserts from anyone
- * and can't be read back, so there is nothing else this page needs.
+ * A plain fetch rather than supabase-js: one call doesn't justify shipping
+ * the client library to every visitor. The function answers the same way for
+ * a new address and one already listed, so there is no "already on the list"
+ * to report: that answer would tell anyone whether an address had signed up.
  */
 
-export type JoinResult = 'joined' | 'already' | 'invalid' | 'error'
+export type JoinResult = 'joined' | 'invalid' | 'error'
 
 const url = import.meta.env.VITE_SUPABASE_URL
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -21,23 +23,18 @@ export async function joinWaitlist(email: string, source: string): Promise<JoinR
   if (!url || !key) return 'error'
 
   try {
-    const res = await fetch(`${url}/rest/v1/waitlist`, {
+    const res = await fetch(`${url}/rest/v1/rpc/join_waitlist`, {
       method: 'POST',
       headers: {
         apikey: key,
         Authorization: `Bearer ${key}`,
         'Content-Type': 'application/json',
-        // Insert only: the table has no read policy, so asking for the row
-        // back would fail.
-        Prefer: 'return=minimal',
       },
       body: JSON.stringify({ email: email.trim().toLowerCase(), source }),
     })
     if (res.ok) return 'joined'
 
     const body = (await res.json().catch(() => null)) as { code?: string } | null
-    // Unique violation: they signed up before. That's a success to them.
-    if (res.status === 409 || body?.code === '23505') return 'already'
     // Check violation: the database's shape check disagreed with ours.
     if (body?.code === '23514') return 'invalid'
     return 'error'

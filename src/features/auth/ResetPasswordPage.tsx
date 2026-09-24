@@ -17,10 +17,14 @@ const MIN_PASSWORD = 8
  * Reached from the emailed link. Supabase puts a recovery session in the URL
  * and the client picks it up via `detectSessionInUrl`, so by the time this
  * renders the user is authenticated well enough to set a new password.
+ *
+ * Being signed in isn't enough on its own: the form only shows for the
+ * session the link created. Otherwise anyone at an unlocked laptop could
+ * open this page and take the account.
  */
 export function ResetPasswordPage() {
   const updatePassword = useAuthStore((s) => s.updatePassword)
-  const session = useAuthStore((s) => s.session)
+  const recovering = useAuthStore((s) => s.recovering)
   const loading = useAuthStore((s) => s.loading)
   const navigate = useNavigate()
 
@@ -53,7 +57,7 @@ export function ResetPasswordPage() {
     }
   }
 
-  const linkExpired = !loading && !session
+  const linkExpired = !loading && !recovering
 
   return (
     <AuthLayout>
@@ -61,7 +65,7 @@ export function ResetPasswordPage() {
         <AuthTitle>Set a new password</AuthTitle>
         <AuthSubtitle>
           {linkExpired
-            ? 'That link has expired. Request a new one to continue.'
+            ? 'That link has expired or was already used. Request a new one to continue.'
             : 'Pick something you can actually remember.'}
         </AuthSubtitle>
 

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { MAX_LENGTH } from '@/data/limits'
 import {
   AuthButton,
   AuthCard,
@@ -74,6 +75,7 @@ export function SignUpPage() {
             label="Your name"
             type="text"
             autoComplete="name"
+            maxLength={MAX_LENGTH.fullName}
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             required

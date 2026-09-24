@@ -25,7 +25,7 @@ export function WaitlistForm({ source, inputId, className }: WaitlistFormProps) 
 
   // The form, and the button that was focused, are replaced by the result.
   // Focus follows it, or a keyboard user would be dropped back at the top.
-  const finished = status === 'joined' || status === 'already'
+  const finished = status === 'joined'
   useEffect(() => {
     if (finished) doneRef.current?.focus()
   }, [finished])
@@ -58,7 +58,7 @@ export function WaitlistForm({ source, inputId, className }: WaitlistFormProps) 
         className={cn('max-w-md rounded-sm outline-none', className)}
       >
         <p className="text-[19px] font-semibold tracking-tight text-slate-900">
-          {status === 'joined' ? "You're on the list." : "You're already on the list."}
+          You&rsquo;re on the list.
         </p>
         <p className="mt-1.5 text-[15px] leading-relaxed text-slate-700">
           We&rsquo;ll email {email.trim()} when Pillars opens.

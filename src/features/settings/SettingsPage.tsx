@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { repository } from '@/data'
+import { MAX_LENGTH } from '@/data/limits'
 import type { Goal, Pillar, Profile } from '@/data/types'
 import { useAuthStore } from '@/features/auth/useAuthStore'
 import { GoalEditor, type EditablePillar } from '@/features/goals/GoalEditor'
@@ -215,6 +216,7 @@ export function PillarsSection({
             >
               <input
                 defaultValue={pillar.name}
+                maxLength={MAX_LENGTH.pillarName}
                 aria-label={`Rename ${pillar.name}`}
                 onBlur={(e) => rename(pillar, e.target.value)}
                 onKeyDown={(e) => {
@@ -283,6 +285,7 @@ export function PillarsSection({
           <input
             id={newId}
             value={draft}
+            maxLength={MAX_LENGTH.pillarName}
             onChange={(e) => setDraft(e.target.value)}
             placeholder="Name it"
             className={cn(
