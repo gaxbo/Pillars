@@ -31,6 +31,11 @@ create table if not exists private.early_access (
   code  text not null check (char_length(trim(code)) >= 6)
 );
 
+-- With no policies, no API role can read it even if `private` were ever
+-- exposed. The trigger below and the SQL Editor both run as the table's
+-- owner, which RLS doesn't apply to.
+alter table private.early_access enable row level security;
+
 create or replace function private.check_early_access() returns trigger
 language plpgsql security definer set search_path = '' as $$
 declare
