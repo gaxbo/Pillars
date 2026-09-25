@@ -13,6 +13,35 @@ type Status = 'checking' | 'onboarded' | 'needs-onboarding'
  * every reload.
  */
 export function RequireOnboarded({ children }: { children: React.ReactNode }) {
+  const status = useOnboardedStatus()
+  if (status === 'skip') return <>{children}</>
+  if (status === 'checking') return <Checking />
+  if (status === 'needs-onboarding') return <Navigate to="/onboarding" replace />
+  return <>{children}</>
+}
+
+/**
+ * The other way round: onboarding is only for accounts that haven't done it.
+ * Going through it again, from the back button or a bookmark, would save a
+ * second set of pillars over a board already in use.
+ */
+export function RedirectIfOnboarded({ children }: { children: React.ReactNode }) {
+  const status = useOnboardedStatus()
+  if (status === 'skip') return <>{children}</>
+  if (status === 'checking') return <Checking />
+  if (status === 'onboarded') return <Navigate to="/" replace />
+  return <>{children}</>
+}
+
+function Checking() {
+  return (
+    <div className="flex min-h-full items-center justify-center">
+      <p role="status" className="label-mono text-[12px] text-slate-600">Loading…</p>
+    </div>
+  )
+}
+
+function useOnboardedStatus(): Status | 'skip' {
   const offline = useAuthStore((s) => s.offline)
   const session = useAuthStore((s) => s.session)
   const [status, setStatus] = useState<Status>('checking')
@@ -37,19 +66,5 @@ export function RequireOnboarded({ children }: { children: React.ReactNode }) {
     }
   }, [offline, session])
 
-  if (offline || !session) return <>{children}</>
-
-  if (status === 'checking') {
-    return (
-      <div className="flex min-h-full items-center justify-center">
-        <p role="status" className="label-mono text-[12px] text-slate-600">Loading…</p>
-      </div>
-    )
-  }
-
-  if (status === 'needs-onboarding') {
-    return <Navigate to="/onboarding" replace />
-  }
-
-  return <>{children}</>
+  return offline || !session ? 'skip' : status
 }

@@ -15,7 +15,7 @@ import { ResetLinkSentPage } from '@/features/auth/ResetLinkSentPage'
 import { VerifyCodePage } from '@/features/auth/VerifyCodePage'
 import { WelcomePage } from '@/features/auth/WelcomePage'
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
-import { RequireOnboarded } from '@/features/onboarding/RequireOnboarded'
+import { RedirectIfOnboarded, RequireOnboarded } from '@/features/onboarding/RequireOnboarded'
 import { WeeklyReviewPage } from '@/features/weekly/WeeklyReviewPage'
 import {
   AccountPage,
@@ -73,7 +73,9 @@ export default function App() {
           path="/onboarding"
           element={
             <RequireAuth>
-              <OnboardingPage />
+              <RedirectIfOnboarded>
+                <OnboardingPage />
+              </RedirectIfOnboarded>
             </RequireAuth>
           }
         />

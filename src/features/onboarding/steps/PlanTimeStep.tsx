@@ -48,6 +48,7 @@ export function PlanTimeStep() {
   const saving = useOnboardingStore((s) => s.saving)
   const error = useOnboardingStore((s) => s.error)
   const back = useOnboardingStore((s) => s.back)
+  const reset = useOnboardingStore((s) => s.reset)
   const navigate = useNavigate()
 
   const { hour12, minute, meridiem } = parse(time)
@@ -56,6 +57,10 @@ export function PlanTimeStep() {
     try {
       await finish()
       navigate('/', { replace: true })
+      // The answers belong to this account. Anyone who signs up next in this
+      // tab starts at the first screen, not at the end holding these. After
+      // the navigation, so the first screen doesn't flash on the way out.
+      reset()
     } catch {
       // The store holds the message; stay on the step so nothing is lost.
     }

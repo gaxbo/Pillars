@@ -92,21 +92,28 @@ interface OnboardingState {
   setPlanningTime: (time: string) => void
 
   finish: () => Promise<void>
+  /** Back to a fresh start, once a finished setup has left the screen. */
+  reset: () => void
 }
 
 export const MAX_ARCHETYPES = 3
 
-export const useOnboardingStore = create<OnboardingState>((set, get) => ({
-  step: 'archetype',
-  direction: 'forward',
-  archetypes: [],
-  dump: [],
-  templateId: null,
-  pillars: [],
+/** A fresh start: the first screen, nothing answered. */
+const FRESH = {
+  step: 'archetype' as Step,
+  direction: 'forward' as Direction,
+  archetypes: [] as string[],
+  dump: [] as string[],
+  templateId: null as string | null,
+  pillars: [] as DraftPillar[],
   planningWeekday: 0,
   planningTime: '18:00',
   saving: false,
   error: '',
+}
+
+export const useOnboardingStore = create<OnboardingState>((set, get) => ({
+  ...FRESH,
 
   goTo(step) {
     const from = STEPS.indexOf(get().step)
@@ -236,7 +243,12 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
 
       for (const draft of pillars) {
         const name = draft.name.trim()
-        const pillar = byName.get(name.toLowerCase()) ?? (await repository.createPillar(name))
+        let pillar = byName.get(name.toLowerCase())
+        if (!pillar) {
+          pillar = await repository.createPillar(name)
+          // So a second pillar of the same name in this list reuses it.
+          byName.set(name.toLowerCase(), pillar)
+        }
         kept.add(pillar.id)
 
         // One goal per pillar per week, as the database requires.
@@ -268,5 +280,9 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
     }
 
     set({ saving: false })
+  },
+
+  reset() {
+    set(FRESH)
   },
 }))
