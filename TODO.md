@@ -151,7 +151,16 @@ to be added to `vercel.json` too, or browsers block it.
       carts, Shopify), none of which Pillars has. Import the list from Table
       Editor → Export CSV; forwarding new sign-ups automatically can go in the
       `join-waitlist` function once one is picked.
-- [ ] An Open Graph image, once there's a domain to host it on.
+- [x] **The logo** (2026-09-25): the meter mark with gradient pillars and a
+      lowercase "pillars" wordmark. Favicons and the iPhone home-screen icon
+      on both sites, the logo in the landing nav and footer and on sign in
+      and sign up. Files and usage
+      in `brand/`; rebuild with `npm run brand`.
+- [ ] **Turn on the link preview once there's a domain.** The image is ready
+      at `landing/public/og.png`. Add `<meta property="og:image"
+      content="https://<domain>/og.png">` to `landing/index.html` and switch
+      `twitter:card` to `summary_large_image`: most sites won't load a
+      preview image from a relative address.
 
 ## Accessibility
 

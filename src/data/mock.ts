@@ -6,123 +6,157 @@ import type {
   PillarsRepository,
 } from './repository'
 import type { Goal, IsoDate, Pillar, Profile, Task, WeekReport } from './types'
+import { TEMPLATES } from '@/features/onboarding/catalog'
 
 const uid = () => Math.random().toString(36).slice(2, 10)
 
 const monday = startOfWeek(new Date())
 const day = (offset: number): IsoDate => toIso(addDays(monday, offset))
 
-const pillars: Pillar[] = [
-  { id: 'p-health', name: 'Health', order: 0, archivedAt: null },
-  { id: 'p-craft', name: 'Craft', order: 1, archivedAt: null },
-  { id: 'p-people', name: 'People', order: 2, archivedAt: null },
-  { id: 'p-money', name: 'Money', order: 3, archivedAt: null },
-  { id: 'p-mind', name: 'Mind', order: 4, archivedAt: null },
-]
+type Priority = Task['priority']
+type Status = Task['status']
 
-const goals: Goal[] = [
-  {
-    id: 'g-run',
-    pillarId: 'p-health',
-    title: 'Move three times',
-    description: 'Three sessions that get the heart rate up.',
-    target: 3,
-    unit: 'sessions',
-    weekStart: day(0),
-  },
-  {
-    id: 'g-ship',
-    pillarId: 'p-craft',
-    title: 'Ship something',
-    description: 'Put two real pieces of work in front of people.',
-    target: 2,
-    unit: 'things shipped',
-    weekStart: day(0),
-  },
-  {
-    id: 'g-call',
-    pillarId: 'p-people',
-    title: 'Reach out',
-    description: "Three people I'd regret losing touch with.",
-    target: 3,
-    unit: 'people',
-    weekStart: day(0),
-  },
-  // --- last week, so the weekly review has a week to actually report on ---
-  {
-    id: 'g-run-prev',
-    pillarId: 'p-health',
-    title: 'Move three times',
-    description: 'Three sessions that get the heart rate up.',
-    target: 3,
-    unit: 'sessions',
-    weekStart: day(-7),
-  },
-  {
-    id: 'g-ship-prev',
-    pillarId: 'p-craft',
-    title: 'Ship something',
-    description: 'Put two real pieces of work in front of people.',
-    target: 2,
-    unit: 'things shipped',
-    weekStart: day(-7),
-  },
-  {
-    id: 'g-call-prev',
-    pillarId: 'p-people',
-    title: 'Reach out',
-    description: "Three people I'd regret losing touch with.",
-    target: 3,
-    unit: 'people',
-    weekStart: day(-7),
-  },
-  {
-    id: 'g-read',
-    pillarId: 'p-mind',
-    title: 'Read most days',
-    description: 'Five sittings with a book, not a feed.',
-    target: 5,
-    unit: 'sittings',
-    weekStart: day(0),
-  },
-]
+interface SampleWeek {
+  /** One of onboarding's starting sets, by id: its pillars, in its order. */
+  template: string
+  goals: { key: string; pillar: string; title: string; description: string; target: number; unit: string }[]
+  /** [pillar, goal key or null, title, day (0 is Monday, negative is last week), priority, status] */
+  tasks: [string, string | null, string, number, Priority, Status][]
+}
 
 /**
- * Seeded deliberately uneven: some days full, some pillars empty, one day
- * untouched. The greyed-out empty state is as important to look at as the
- * active one, so the fixture has to show both side by side.
+ * Three weeks from three different lives, all real starting sets. The
+ * landing page's screenshots are taken from these, a different life per
+ * section, so the page doesn't read as written for one kind of person.
+ * `?sample=<template id>` picks one; the capture script passes it.
+ *
+ * Each is seeded deliberately uneven: some days full, some pillars empty,
+ * Saturday untouched. The empty state matters as much as the active one.
+ * A goal key with `-prev` is last week's copy, for the weekly review.
  */
-let tasks: Task[] = [
-  t('p-health', 'g-run', 'Morning run, 5k', 0, 'high', 'done'),
-  t('p-health', null, 'Meal prep for the week', 0, 'medium', 'open'),
-  t('p-craft', 'g-ship', 'Finish the onboarding flow', 0, 'high', 'open'),
-  t('p-mind', 'g-read', 'Read 20 pages', 0, 'low', 'done'),
-
-  t('p-craft', 'g-ship', 'Review pull requests', 1, 'medium', 'open'),
-  t('p-people', 'g-call', 'Call Mom', 1, 'high', 'open'),
-
-  t('p-health', 'g-run', 'Gym: upper body', 2, 'medium', 'open'),
-  t('p-money', null, 'Review monthly spend', 2, 'low', 'open'),
-  t('p-mind', 'g-read', 'Read 20 pages', 2, 'low', 'open'),
-
-  t('p-craft', null, 'Sketch the landing page', 3, 'high', 'open'),
-
-  t('p-health', 'g-run', 'Long run', 4, 'medium', 'open'),
-  t('p-people', 'g-call', 'Coffee with Sam', 4, 'medium', 'open'),
-
-  t('p-health', 'g-run-prev', 'Morning run', -7, 'medium', 'done'),
-  t('p-craft', 'g-ship-prev', 'Ship the pricing page', -7, 'high', 'done'),
-  t('p-health', 'g-run-prev', 'Gym', -6, 'medium', 'done'),
-  t('p-people', 'g-call-prev', 'Call Dad', -6, 'high', 'open'),
-  t('p-craft', 'g-ship-prev', 'Write the changelog', -5, 'medium', 'done'),
-  t('p-money', null, 'Cancel the old subscription', -5, 'low', 'open'),
-  t('p-health', 'g-run-prev', 'Long run', -4, 'medium', 'open'),
-  t('p-people', 'g-call-prev', 'Text Priya', -3, 'low', 'done'),
-
-  // Saturday left entirely empty on purpose.
-
-  t('p-mind', null, 'Plan next week', 6, 'high', 'open'),
+const SAMPLES: SampleWeek[] = [
+  {
+    template: 'the-good-week',
+    goals: [
+      { key: 'move', pillar: 'Fitness', title: 'Move three times', description: 'Three sessions that get the heart rate up.', target: 3, unit: 'sessions' },
+      { key: 'paint', pillar: 'Hobbies', title: 'Paint twice', description: 'Two evenings at the easel, phone in another room.', target: 2, unit: 'sessions' },
+      { key: 'reach', pillar: 'Friends', title: 'Reach out', description: "Three people I'd regret losing touch with.", target: 3, unit: 'people' },
+      { key: 'read', pillar: 'Habits', title: 'Read most days', description: 'Five sittings with a book, not a feed.', target: 5, unit: 'sittings' },
+    ],
+    tasks: [
+      ['Fitness', 'move', 'Morning run, 5k', 0, 'high', 'done'],
+      ['Habits', null, 'Meal prep for the week', 0, 'medium', 'open'],
+      ['Hobbies', 'paint', 'Finish the lake sketch', 0, 'high', 'open'],
+      ['Habits', 'read', 'Read 20 pages', 0, 'low', 'done'],
+      ['Hobbies', 'paint', 'Watercolor class', 1, 'medium', 'open'],
+      ['Friends', 'reach', 'Call Mom', 1, 'high', 'open'],
+      ['Fitness', 'move', 'Gym: upper body', 2, 'medium', 'open'],
+      ['Savings', null, 'Review monthly spend', 2, 'low', 'open'],
+      ['Habits', 'read', 'Read 20 pages', 2, 'low', 'open'],
+      ['Savings', null, 'Move $100 to savings', 3, 'high', 'open'],
+      ['Fitness', 'move', 'Long run', 4, 'medium', 'open'],
+      ['Friends', 'reach', 'Coffee with Sam', 4, 'medium', 'open'],
+      ['Habits', null, 'Plan next week', 6, 'high', 'open'],
+      ['Fitness', 'move-prev', 'Morning run', -7, 'medium', 'done'],
+      ['Hobbies', 'paint-prev', 'Sketch at the park', -7, 'high', 'done'],
+      ['Fitness', 'move-prev', 'Gym', -6, 'medium', 'done'],
+      ['Friends', 'reach-prev', 'Call Dad', -6, 'high', 'open'],
+      ['Hobbies', 'paint-prev', 'Paint the window view', -5, 'medium', 'done'],
+      ['Savings', null, 'Cancel the old subscription', -5, 'low', 'open'],
+      ['Fitness', 'move-prev', 'Long run', -4, 'medium', 'open'],
+      ['Friends', 'reach-prev', 'Text Priya', -3, 'low', 'done'],
+    ],
+  },
+  {
+    template: 'hold-the-line',
+    goals: [
+      { key: 'train', pillar: 'Training', title: 'Train three times', description: 'Three sessions, before work or at lunch.', target: 3, unit: 'sessions' },
+      { key: 'close', pillar: 'Day Job', title: 'Close two big items', description: 'Two things off the list that actually matter.', target: 2, unit: 'items' },
+      { key: 'logoff', pillar: 'Boundaries', title: 'Log off by 6', description: 'Three evenings with the laptop shut on time.', target: 3, unit: 'evenings' },
+      { key: 'off', pillar: 'Downtime', title: 'Two evenings off', description: 'Nothing scheduled, nothing to catch up on.', target: 2, unit: 'evenings' },
+    ],
+    tasks: [
+      ['Training', 'train', 'Early swim', 0, 'high', 'done'],
+      ['Household', null, 'Meal prep for the week', 0, 'medium', 'open'],
+      ['Day Job', 'close', 'Finish the Q3 deck', 0, 'high', 'open'],
+      ['Boundaries', 'logoff', 'Laptop shut at 6', 0, 'low', 'done'],
+      ['Day Job', 'close', 'Prep the 1:1s', 1, 'medium', 'open'],
+      ['Downtime', 'off', 'Movie night, no phone', 1, 'high', 'open'],
+      ['Training', 'train', 'Gym: upper body', 2, 'medium', 'open'],
+      ['Household', null, 'Pay the bills', 2, 'low', 'open'],
+      ['Boundaries', 'logoff', 'Laptop shut at 6', 2, 'low', 'open'],
+      ['Day Job', null, 'Draft the performance review', 3, 'high', 'open'],
+      ['Training', 'train', 'Lunchtime run', 4, 'medium', 'open'],
+      ['Downtime', 'off', 'Dinner with Sam', 4, 'medium', 'open'],
+      ['Household', null, 'Plan next week', 6, 'high', 'open'],
+      ['Training', 'train-prev', 'Early swim', -7, 'medium', 'done'],
+      ['Day Job', 'close-prev', 'Ship the pricing update', -7, 'high', 'done'],
+      ['Training', 'train-prev', 'Gym', -6, 'medium', 'done'],
+      ['Downtime', 'off-prev', 'Board game night', -6, 'high', 'open'],
+      ['Day Job', 'close-prev', 'Write the quarterly summary', -5, 'medium', 'done'],
+      ['Household', null, 'Cancel the old subscription', -5, 'low', 'open'],
+      ['Training', 'train-prev', 'Long run', -4, 'medium', 'open'],
+      ['Downtime', 'off-prev', 'Afternoon off, no email', -3, 'low', 'done'],
+    ],
+  },
+  {
+    template: 'back-on-your-feet',
+    goals: [
+      { key: 'bed', pillar: 'Sleep', title: 'In bed by 11', description: 'Five nights, phone charging in the kitchen.', target: 5, unit: 'nights' },
+      { key: 'walk', pillar: 'Daily Basics', title: 'Walk three times', description: 'Twenty minutes outside, nowhere to be.', target: 3, unit: 'walks' },
+      { key: 'reach', pillar: 'Support', title: 'Reach out twice', description: 'Two people who know how the year has been.', target: 2, unit: 'people' },
+    ],
+    tasks: [
+      ['Sleep', 'bed', 'Phone out of the bedroom', 0, 'high', 'done'],
+      ['Headspace', null, 'Journal for ten minutes', 0, 'medium', 'open'],
+      ['Daily Basics', 'walk', 'Walk around the block', 0, 'medium', 'open'],
+      ['Daily Basics', null, 'Cook one real dinner', 0, 'low', 'done'],
+      ['Support', 'reach', 'Call Jess back', 1, 'high', 'open'],
+      ['Sleep', 'bed', 'In bed by 11', 1, 'medium', 'open'],
+      ['Daily Basics', 'walk', 'Walk to the market', 2, 'medium', 'open'],
+      ['Money Reset', null, 'List what I owe', 2, 'low', 'open'],
+      ['Headspace', null, 'Therapy, 5pm', 3, 'high', 'open'],
+      ['Daily Basics', 'walk', 'Walk with Sam', 4, 'medium', 'open'],
+      ['Support', 'reach', 'Text my sister', 4, 'medium', 'open'],
+      ['Daily Basics', null, 'Plan next week', 6, 'high', 'open'],
+      ['Sleep', 'bed-prev', 'In bed by 11', -7, 'medium', 'done'],
+      ['Daily Basics', 'walk-prev', 'Walk around the block', -7, 'high', 'done'],
+      ['Sleep', 'bed-prev', 'In bed by 11', -6, 'medium', 'done'],
+      ['Support', 'reach-prev', 'Call Dad', -6, 'high', 'open'],
+      ['Headspace', null, 'Journal', -5, 'medium', 'done'],
+      ['Money Reset', null, 'Cancel the old subscription', -5, 'low', 'open'],
+      ['Daily Basics', 'walk-prev', 'Walk after dinner', -4, 'medium', 'open'],
+      ['Support', 'reach-prev', 'Coffee with Priya', -3, 'low', 'done'],
+    ],
+  },
 ]
+
+const requested = new URLSearchParams(window.location.search).get('sample')
+const sample = SAMPLES.find((s) => s.template === requested) ?? SAMPLES[0]
+
+const pillarId = (name: string) => `p-${name.toLowerCase().replace(/\W+/g, '-')}`
+
+const pillars: Pillar[] = (
+  TEMPLATES.find((t) => t.id === sample.template)?.pillars ?? []
+).map((name, order) => ({ id: pillarId(name), name, order, archivedAt: null }))
+
+// This week's goals, and last week's copies so the review has a week to report on.
+const goals: Goal[] = sample.goals.flatMap((g) =>
+  [0, -7].map((offset) => ({
+    id: `g-${g.key}${offset ? '-prev' : ''}`,
+    pillarId: pillarId(g.pillar),
+    title: g.title,
+    description: g.description,
+    target: g.target,
+    unit: g.unit,
+    weekStart: day(offset),
+  })),
+)
+
+let tasks: Task[] = sample.tasks.map(([pillar, goal, title, offset, priority, status]) =>
+  t(pillarId(pillar), goal && `g-${goal}`, title, offset, priority, status),
+)
+
 
 function t(
   pillarId: string,

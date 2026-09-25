@@ -67,6 +67,14 @@ const QUIET = '[aria-label="Tasks still open today"] { display: none !important 
  * `target` returns the clip; `shows` returns what's inside it, for the dash
  * check. The page holds off-screen overlays whose text never reaches the shot.
  */
+/**
+ * A phone opens on today, so its shot would change with the day it's taken.
+ * Monday is the sample week's fullest day: several pillars at work, two left
+ * empty, the mix the board is about.
+ */
+const openMonday = (page) =>
+  page.locator('nav[aria-label="Days this week"] div.grid button').first().click()
+
 async function shoot(browser, name, { width, height, path = '/', quiet = true, prepare, target, shows }) {
   const context = await browser.newContext({
     viewport: { width, height },
@@ -110,10 +118,15 @@ try {
   const browser = await chromium.launch({ channel: 'chrome' })
   console.log('Capturing into landing/public/shots/')
 
+  // Each section of the landing shows a different life (src/data/mock.ts):
+  // the hero The Good Week, Method's shots Hold the Line, and its phone
+  // Back On Your Feet.
+
   // The hero: the whole week, exactly as the app opens.
   await shoot(browser, 'board-full', {
     width: 1440,
     height: 900,
+    path: '/?sample=the-good-week',
     target: async () => ({ x: 0, y: 0, width: 1440, height: 900 }),
     shows: (page) => [page.locator('header').first(), page.locator('main')],
   })
@@ -122,6 +135,8 @@ try {
   await shoot(browser, 'phone-full', {
     width: 390,
     height: 844,
+    path: '/?sample=the-good-week',
+    prepare: openMonday,
     target: async () => ({ x: 0, y: 0, width: 390, height: 844 }),
     shows: (page) => [page.locator('header').first(), page.locator('nav'), page.locator('main')],
   })
@@ -130,6 +145,7 @@ try {
   await shoot(browser, 'board', {
     width: 1760,
     height: 900,
+    path: '/?sample=hold-the-line',
     target: async (page) => {
       const first = await page.locator('main section').nth(0).boundingBox()
       const fourth = await page.locator('main section').nth(3).boundingBox()
@@ -147,7 +163,8 @@ try {
   await shoot(browser, 'goals', {
     width: 1440,
     height: 900,
-    prepare: (page) => page.getByRole('button', { name: 'This week', exact: true }).click(),
+    path: '/?sample=hold-the-line',
+    prepare: (page) => page.getByRole('button', { name: 'View goals', exact: true }).click(),
     target: (page) => box(page.getByRole('dialog', { name: 'This week' }), { maxHeight: 492 }),
     shows: (page) => [page.getByRole('dialog', { name: 'This week' })],
   })
@@ -156,8 +173,14 @@ try {
   await shoot(browser, 'phone', {
     width: 390,
     height: 760,
-    // Down to the day's last pillar, no further.
-    target: async () => ({ x: 0, y: 0, width: 390, height: 520 }),
+    path: '/?sample=back-on-your-feet',
+    prepare: openMonday,
+    // Down to the day's card and no further. Method.tsx sizes the image,
+    // so match its height there if this changes.
+    target: async (page) => {
+      const day = await page.locator('main section').first().boundingBox()
+      return { x: 0, y: 0, width: 390, height: Math.ceil(day.y + day.height + 16) }
+    },
     shows: (page) => [page.locator('header').first(), page.locator('nav'), page.locator('main')],
   })
 
@@ -165,7 +188,7 @@ try {
   await shoot(browser, 'triage', {
     width: 1280,
     height: 860,
-    path: '/?preview=eod',
+    path: '/?preview=eod&sample=hold-the-line',
     quiet: false,
     prepare: async (page) => {
       await page.getByRole('button', { name: 'Take a look' }).click()
@@ -184,7 +207,7 @@ try {
   await shoot(browser, 'review', {
     width: 1280,
     height: 900,
-    path: '/weekly-review',
+    path: '/weekly-review?sample=hold-the-line',
     target: async (page) => {
       const column = await box(page.locator('h1').locator('xpath=..'), { pad: 40 })
       const stats = await page.getByText('goals completed').boundingBox()

@@ -126,10 +126,11 @@ stays private.
 
 ```
 design screens/       The hi-fi exports the UI is built against. Input, not code.
+brand/                The logo, mark, icons and link preview. See brand/README.md.
 src/design/           Tokens (tokens.css) and spring configs (motion.ts).
 src/components/       Shared primitives, and WeekVignette (sign-in + landing).
 landing/              The pre-launch landing page and waitlist form.
-scripts/              capture-landing-shots.mjs.
+scripts/              capture-landing-shots.mjs, and build-brand.mjs (npm run brand).
 src/features/board/   The main view: week grid, pillars, tasks, drag and drop.
 src/features/auth/    Sign in, sign up, verify, password reset.
 src/features/onboarding/  The six-step setup flow, archetype catalog, matcher.

@@ -7,8 +7,8 @@ import {
   AuthCard,
   AuthError,
   AuthLayout,
+  AuthLogo,
   AuthSubtitle,
-  AuthTitle,
   CaptchaSlot,
   TextField,
 } from './AuthUI'
@@ -81,7 +81,7 @@ export function SignUpPage() {
   return (
     <AuthLayout split>
       <AuthCard>
-        <AuthTitle size="lg">Pillars</AuthTitle>
+        <AuthLogo />
         <AuthSubtitle>Make an account and build your first week.</AuthSubtitle>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-3.5">

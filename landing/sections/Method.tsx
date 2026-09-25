@@ -27,7 +27,7 @@ export function Method() {
             src="/shots/board.webp"
             width={988}
             height={500}
-            alt="Four days of the Pillars board. Each day lists Health, Craft, People, Money and Mind, with tasks under the pillars that have work."
+            alt="Four days of the Pillars board. Each day lists Day Job, Boundaries, Training, Household and Downtime, with tasks under the pillars that have work."
             // On a phone it runs further off the edge, so two days show at a
             // readable size instead of four too small to read.
             className="-mr-[90%] md:-mr-44"
@@ -59,8 +59,8 @@ export function Method() {
           <Shot
             src="/shots/phone.webp"
             width={390}
-            height={520}
-            alt="Pillars on a phone: one day at a time, with the week as a row of days across the top."
+            height={621}
+            alt="Pillars on a phone: the week as a row of days across the top, and one day below, its pillars as sections of a single card."
             className="mx-auto w-full max-w-[19rem]"
             imageClassName="rounded-[1.75rem]"
           />

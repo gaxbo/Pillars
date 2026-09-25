@@ -46,21 +46,19 @@ export function AuthCard({ children }: { children: ReactNode }) {
   )
 }
 
-export function AuthTitle({
-  children,
-  size = 'md',
-}: {
-  children: ReactNode
-  size?: 'md' | 'lg'
-}) {
+export function AuthTitle({ children }: { children: ReactNode }) {
   return (
-    <h1
-      className={cn(
-        'text-center font-bold tracking-tight text-slate-900',
-        size === 'lg' ? 'text-[40px] leading-none' : 'text-[28px] leading-tight',
-      )}
-    >
+    <h1 className="text-center text-[28px] font-bold leading-tight tracking-tight text-slate-900">
       {children}
+    </h1>
+  )
+}
+
+/** Sign in and sign up open on the logo: still the page's heading, named "Pillars". */
+export function AuthLogo() {
+  return (
+    <h1 className="flex justify-center">
+      <img src="/brand/pillars-logo.svg" alt="Pillars" width={150} height={40} className="block h-10 w-auto" />
     </h1>
   )
 }

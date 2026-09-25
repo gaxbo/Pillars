@@ -6,9 +6,9 @@ import {
   AuthCard,
   AuthError,
   AuthLayout,
+  AuthLogo,
   AuthNote,
   AuthSubtitle,
-  AuthTitle,
   CaptchaSlot,
   TextField,
 } from './AuthUI'
@@ -61,7 +61,7 @@ export function SignInPage() {
             Early access
           </p>
         )}
-        <AuthTitle size="lg">Pillars</AuthTitle>
+        <AuthLogo />
         <AuthSubtitle>
           {early
             ? 'Welcome back. Sign in with your beta account.'

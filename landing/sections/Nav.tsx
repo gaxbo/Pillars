@@ -36,9 +36,12 @@ export function Nav({ page, joinInputId }: { page: Page; joinInputId: string }) 
       >
         <a
           href={page === 'home' ? '#top' : '/'}
-          className="mr-auto rounded-sm text-[21px] font-bold tracking-[-0.02em] text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-700"
+          className="mr-auto shrink-0 rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-700"
         >
-          Pillars
+          {/* brand/pillars-logo.svg: the mark and the outlined wordmark.
+              Never squeezed; a notch smaller on the narrowest phones so the
+              row still fits at 320px. */}
+          <img src="/brand/pillars-logo.svg" alt="Pillars" width={97} height={26} className="block h-[22px] w-auto sm:h-[26px]" />
           {page !== 'home' && <span className="sr-only-text">, home</span>}
         </a>
 

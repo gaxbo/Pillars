@@ -1,8 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="7" fill="#54A7DE"/>
-  <g fill="#fff">
-    <rect x="7"  y="9"  width="4.5" height="14" rx="2.25"/>
-    <rect x="13.75" y="6"  width="4.5" height="20" rx="2.25"/>
-    <rect x="20.5" y="13" width="4.5" height="10" rx="2.25"/>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Pillars"><title>Pillars</title><defs><linearGradient id="pillars-icon" gradientUnits="userSpaceOnUse" x1="0" y1="3" x2="0" y2="21"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#A9D5EF"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="#2F6F9B"/><g transform="translate(14 14) scale(1.5)"><rect x="3" y="3" width="5" height="18" rx="1" fill="#FFFFFF" fill-opacity="0.3"/><rect x="16" y="3" width="5" height="18" rx="1" fill="#FFFFFF" fill-opacity="0.3"/><rect x="3" y="10" width="5" height="11" rx="1" fill="url(#pillars-icon)"/><rect x="9.5" y="3" width="5" height="18" rx="1" fill="url(#pillars-icon)"/><rect x="16" y="14" width="5" height="7" rx="1" fill="url(#pillars-icon)"/></g></svg>

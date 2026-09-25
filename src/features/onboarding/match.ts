@@ -53,7 +53,9 @@ export function matchTemplates(
   )
 
   const scored = TEMPLATES.map((template) => {
-    const keywords = template.keywords.flatMap(tokenize).map(stem)
+    // Once each: "kid" and "kids" are one word to the stemmer, and one
+    // mention in the dump shouldn't count twice.
+    const keywords = new Set(template.keywords.flatMap(tokenize).map(stem))
 
     let score = 0
     for (const keyword of keywords) {

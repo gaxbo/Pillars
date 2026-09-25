@@ -72,7 +72,7 @@ function Stack() {
   return (
     <div
       role="img"
-      aria-label="The order Pillars plans in, top to bottom: pillars first (Health, Craft, People), then a goal for each, then a set time to plan the week, and tasks last."
+      aria-label="The order Pillars plans in, top to bottom: pillars first (Family, Budget, Me Time), then a goal for each, then a set time to plan the week, and tasks last."
       className="relative"
     >
       {/* The rail: solid blue where you start, fading to where tasks sit. */}
@@ -85,7 +85,7 @@ function Stack() {
       <ol aria-hidden="true" className="relative grid gap-4">
         <Tier n={1} label="Start here" strong delay={0}>
           <div className="flex flex-wrap gap-2">
-            {['Health', 'Craft', 'People'].map((name) => (
+            {['Family', 'Budget', 'Me Time'].map((name) => (
               <span
                 key={name}
                 className="label-mono rounded-pillar border border-white/70 px-3.5 py-2 text-[12px] text-blue-800 shadow-[var(--shadow-raised)]"
@@ -103,10 +103,10 @@ function Stack() {
             style={{ background: 'var(--gradient-surface-soft)' }}
           >
             <div className="flex items-baseline justify-between gap-3">
-              <span className="text-[14px] font-semibold text-slate-900">Health</span>
+              <span className="text-[14px] font-semibold text-slate-900">Me Time</span>
               <span className="label-mono text-[12px] tabular-nums text-slate-700">2/3</span>
             </div>
-            <p className="mt-0.5 text-[13px] text-slate-700">Move three times</p>
+            <p className="mt-0.5 text-[13px] text-slate-700">Three evenings to myself</p>
             <div className="mt-2 h-1.5 overflow-hidden rounded-pill border border-slate-200 bg-white">
               <div className="h-full w-2/3 rounded-pill bg-blue-600" />
             </div>
@@ -129,8 +129,8 @@ function Stack() {
 
         <Tier n={4} label="Tasks last" delay={0.36}>
           <div className="grid gap-1.5">
-            <TaskChip done>Morning run</TaskChip>
-            <TaskChip>Gym: upper body</TaskChip>
+            <TaskChip done>Bath and a book</TaskChip>
+            <TaskChip>Pottery class</TaskChip>
           </div>
         </Tier>
       </ol>

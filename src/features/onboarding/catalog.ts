@@ -13,6 +13,12 @@ export interface PillarTemplate {
   pillars: string[]
   /** Archetypes this set suits. */
   archetypes: string[]
+  /**
+   * What the brain dump is matched against: the everyday words someone in
+   * this life actually writes ("call mom", "can't sleep", "invoice clients"),
+   * grouped by the pillar they point to. Variants the crude stemmer can't
+   * join ("save" and "savings", "hobby" and "hobbies") are listed both ways.
+   */
   keywords: string[]
 }
 
@@ -92,8 +98,18 @@ export const TEMPLATES: PillarTemplate[] = [
     pillars: ['Build', 'Audience', 'Runway', 'Energy', 'Loved Ones'],
     archetypes: ['builder'],
     keywords: [
-      'ship', 'launch', 'build', 'product', 'client', 'revenue', 'design',
-      'code', 'startup', 'project', 'pitch', 'marketing', 'website',
+      // The work itself (Build)
+      'ship', 'shipping', 'launch', 'build', 'product', 'app', 'website', 'code',
+      'coding', 'design', 'feature', 'bug', 'prototype', 'mvp', 'portfolio',
+      'startup', 'business', 'project', 'founder', 'freelance', 'hustle',
+      // Who it's for (Audience)
+      'client', 'customers', 'users', 'audience', 'followers', 'newsletter',
+      'content', 'blog', 'podcast', 'video', 'post', 'marketing', 'brand', 'pitch',
+      // Money for a builder (Runway)
+      'runway', 'revenue', 'sales', 'sell', 'pricing', 'invoice', 'invoices',
+      'funding', 'investors', 'profit', 'cash',
+      // Keeping it sustainable (Energy, Loved Ones)
+      'energy', 'loved',
     ],
   },
   {
@@ -103,8 +119,16 @@ export const TEMPLATES: PillarTemplate[] = [
     pillars: ['Day Job', 'Boundaries', 'Training', 'Household', 'Downtime'],
     archetypes: ['operator'],
     keywords: [
-      'work', 'job', 'deadline', 'meetings', 'promotion', 'overtime', 'boss',
-      'career', 'burnout', 'commute', 'rest', 'sleep', 'email',
+      // The job (Day Job)
+      'work', 'job', 'office', 'shift', 'shifts', 'deadline', 'meetings', 'boss',
+      'manager', 'team', 'coworker', 'colleague', 'email', 'inbox',
+      'presentation', 'performance', 'promotion', 'career', 'salary', 'paycheck',
+      'interview', 'quit', 'overtime', 'busy', 'commute', 'commuting', 'burnout',
+      // Protecting the rest of the day (Boundaries, Downtime)
+      'boundaries', 'boundary', 'weekend', 'lunch', 'downtime', 'unwind',
+      'relax', 'rest', 'sleep', 'vacation', 'holiday', 'pto',
+      // Keeping the body going (Training)
+      'training', 'workout',
     ],
   },
   {
@@ -114,8 +138,16 @@ export const TEMPLATES: PillarTemplate[] = [
     pillars: ['Family', 'Logistics', 'Budget', 'My Health', 'Me Time'],
     archetypes: ['caretaker'],
     keywords: [
-      'kids', 'family', 'partner', 'parents', 'home', 'cooking', 'school',
-      'chores', 'friends', 'groceries', 'appointments', 'household',
+      // The people (Family)
+      'family', 'families', 'kids', 'children', 'baby', 'son', 'daughter', 'mom',
+      'mum', 'dad', 'parents', 'partner', 'husband', 'wife', 'sister', 'brother',
+      'grandma', 'grandpa', 'pets', 'dog', 'care', 'caring',
+      // Running the house (Logistics)
+      'home', 'household', 'chores', 'laundry', 'dishes', 'cleaning', 'cooking',
+      'dinner', 'groceries', 'grocery', 'errands', 'school', 'daycare', 'pickup',
+      'appointments', 'doctor', 'dentist', 'calendar', 'logistics',
+      // The money and the self (Budget, My Health, Me Time)
+      'budget', 'bills', 'myself',
     ],
   },
   {
@@ -125,8 +157,19 @@ export const TEMPLATES: PillarTemplate[] = [
     pillars: ['Sleep', 'Headspace', 'Daily Basics', 'Money Reset', 'Support'],
     archetypes: ['rebuilder'],
     keywords: [
-      'sleep', 'therapy', 'recovery', 'anxiety', 'habits', 'routine', 'debt',
-      'reset', 'stress', 'walking', 'meals', 'rebuild',
+      // Rest (Sleep)
+      'sleep', 'tired', 'exhausted', 'insomnia', 'bed', 'bedtime', 'nap',
+      'doomscrolling', 'scrolling',
+      // The inside (Headspace, Support)
+      'therapy', 'therapist', 'counseling', 'anxiety', 'anxious', 'panic',
+      'depression', 'depressed', 'overwhelmed', 'lonely', 'stress', 'mental',
+      'headspace', 'journal', 'meditate', 'meditation', 'breathe', 'grief',
+      'breakup', 'divorce', 'recovery', 'sober', 'drinking', 'support',
+      // The base (Daily Basics)
+      'routine', 'basics', 'meals', 'eat', 'water', 'shower', 'walk', 'walking',
+      'reset', 'rebuild',
+      // Money, starting over (Money Reset)
+      'debt', 'loan', 'credit', 'broke', 'owe',
     ],
   },
   {
@@ -136,8 +179,17 @@ export const TEMPLATES: PillarTemplate[] = [
     pillars: ['Coursework', 'Practice', 'Reading', 'Rest Days', 'Social Life'],
     archetypes: ['student'],
     keywords: [
-      'study', 'exam', 'course', 'degree', 'practice', 'reading', 'research',
-      'language', 'skill', 'learn', 'notes', 'revision',
+      // The course (Coursework)
+      'study', 'studying', 'class', 'lecture', 'lectures', 'homework',
+      'assignment', 'essay', 'thesis', 'paper', 'exam', 'quiz', 'midterm',
+      'finals', 'grades', 'course', 'degree', 'university', 'college', 'semester',
+      'professor', 'tutor', 'bootcamp', 'certification', 'textbook', 'library',
+      'notes', 'revision', 'research',
+      // Getting better at it (Practice, Reading)
+      'practice', 'practicing', 'flashcards', 'instrument', 'piano', 'guitar',
+      'language', 'skill', 'learn', 'reading', 'book', 'chapter',
+      // Around it (Social Life)
+      'social', 'roommate', 'classmates',
     ],
   },
   {
@@ -147,8 +199,15 @@ export const TEMPLATES: PillarTemplate[] = [
     pillars: ['Fitness', 'Hobbies', 'Friends', 'Savings', 'Habits'],
     archetypes: ['steady'],
     keywords: [
-      'balance', 'consistency', 'fitness', 'hobby', 'friends', 'savings',
-      'habits', 'reading', 'gym', 'cooking', 'discipline',
+      // The body (Fitness)
+      'fitness', 'gym', 'exercise', 'run', 'yoga', 'pilates', 'lift', 'swim',
+      'hike', 'hiking', 'bike', 'biking', 'climb', 'sports', 'steps',
+      // What it's for (Hobbies, Friends)
+      'hobby', 'hobbies', 'paint', 'draw', 'photography', 'garden', 'music',
+      'knit', 'travel', 'trip', 'friends', 'brunch', 'hangout', 'games',
+      // Keeping it going (Savings, Habits)
+      'savings', 'save', 'invest', 'retirement', 'habits', 'streak',
+      'consistency', 'discipline', 'balance', 'maintain',
     ],
   },
 ]

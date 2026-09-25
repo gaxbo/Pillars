@@ -11,7 +11,7 @@ const ROWS: [list: string, pillars: string][] = [
   ['You plan when you remember to', 'Planning has a set time each week'],
 ]
 
-type PillarName = 'Health' | 'Craft' | 'People'
+type PillarName = 'Coursework' | 'Practice' | 'Social Life'
 
 interface DemoTask {
   id: string
@@ -24,20 +24,20 @@ interface DemoTask {
 
 /** One week's worth, in the order a list would hold it: the order it arrived. */
 const TASKS: DemoTask[] = [
-  { id: 'deck', title: 'Finish the Q3 deck', pillar: 'Craft', overdue: true },
-  { id: 'run', title: 'Morning run', pillar: 'Health', done: true },
+  { id: 'essay', title: 'Finish the essay draft', pillar: 'Coursework', overdue: true },
+  { id: 'guitar', title: 'Guitar practice', pillar: 'Practice', done: true },
   { id: 'trial', title: 'Cancel a free trial', pillar: null },
-  { id: 'mom', title: 'Call mom back', pillar: 'People', overdue: true },
-  { id: 'gym', title: 'Gym: upper body', pillar: 'Health' },
+  { id: 'maya', title: 'Text Maya back', pillar: 'Social Life', overdue: true },
+  { id: 'scales', title: 'Scales and chord drills', pillar: 'Practice' },
   { id: 'inbox', title: 'Clear the inbox', pillar: null, overdue: true },
-  { id: 'priya', title: 'Send Priya the draft', pillar: 'Craft', done: true },
-  { id: 'sam', title: 'Dinner with Sam', pillar: 'People' },
+  { id: 'chapter', title: 'Read chapter 4', pillar: 'Coursework', done: true },
+  { id: 'movie', title: 'Movie night with roommates', pillar: 'Social Life' },
 ]
 
 const PILLARS: { name: PillarName; goal: string; target: number }[] = [
-  { name: 'Health', goal: 'Move three times', target: 3 },
-  { name: 'Craft', goal: 'Ship the deck', target: 2 },
-  { name: 'People', goal: 'Reach out twice', target: 2 },
+  { name: 'Coursework', goal: 'Two study sessions', target: 2 },
+  { name: 'Practice', goal: 'Practice three times', target: 3 },
+  { name: 'Social Life', goal: 'See friends twice', target: 2 },
 ]
 
 /**
@@ -205,7 +205,7 @@ function WeekCard({ on }: { on: boolean }) {
       role="img"
       aria-label={
         on
-          ? 'The week in Pillars: Health, Craft and People, each with a goal and a progress bar, and each task under the pillar it serves. Two tasks with no pillar are left off the week.'
+          ? 'The week in Pillars: Coursework, Practice and Social Life, each with a goal and a progress bar, and each task under the pillar it serves. Two tasks with no pillar are left off the week.'
           : 'The week as a to-do list: eight tasks in one column in the order they arrived, three marked overdue.'
       }
       className="rounded-modal border p-5 sm:p-7"

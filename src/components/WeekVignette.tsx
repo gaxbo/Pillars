@@ -35,7 +35,7 @@ function GoalsPanel() {
 
       <div className="mt-[0.85em]">
         <Goal
-          pillar="Health"
+          pillar="Fitness"
           goal="Move three times"
           animated
           count={
@@ -47,8 +47,8 @@ function GoalsPanel() {
             </span>
           }
         />
-        <Goal pillar="Craft" goal="Ship something" count="2/2" width="100%" met />
-        <Goal pillar="People" goal="Reach out" count="1/3" width="33.33%" last />
+        <Goal pillar="Hobbies" goal="Paint twice" count="2/2" width="100%" met />
+        <Goal pillar="Friends" goal="Reach out" count="1/3" width="33.33%" last />
       </div>
     </div>
   )
@@ -108,7 +108,7 @@ function TaskStrip() {
         boxShadow: '0 10px 28px rgba(30,69,96,0.18)',
       }}
     >
-      <p className="label-mono mb-[0.45em] text-[0.56em] text-blue-800">Health</p>
+      <p className="label-mono mb-[0.45em] text-[0.56em] text-blue-800">Fitness</p>
       <Task label="Morning run" variant="a" />
       <Task label="Gym: upper body" variant="b" />
     </div>
