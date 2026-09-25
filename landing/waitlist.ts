@@ -1,6 +1,7 @@
 /**
  * Adds an address to the waitlist through `join_waitlist()`
- * (supabase/migrations/0003).
+ * (supabase/migrations/0003), or, once CAPTCHA is on, through the
+ * join-waitlist Edge Function, which checks the Turnstile token first.
  *
  * A plain fetch rather than supabase-js: one call doesn't justify shipping
  * the client library to every visitor. The function answers the same way for
@@ -19,19 +20,31 @@ export function looksLikeEmail(value: string): boolean {
   return EMAIL.test(value) && value.length <= 254
 }
 
-export async function joinWaitlist(email: string, source: string): Promise<JoinResult> {
+/** `captchaToken` is from useCaptcha(); undefined while CAPTCHA is off. */
+export async function joinWaitlist(
+  email: string,
+  source: string,
+  captchaToken?: string,
+): Promise<JoinResult> {
   if (!url || !key) return 'error'
 
+  const address = email.trim().toLowerCase()
   try {
-    const res = await fetch(`${url}/rest/v1/rpc/join_waitlist`, {
-      method: 'POST',
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email: email.trim().toLowerCase(), source }),
-    })
+    const res = captchaToken
+      ? await fetch(`${url}/functions/v1/join-waitlist`, {
+          method: 'POST',
+          headers: { apikey: key, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: address, source, token: captchaToken }),
+        })
+      : await fetch(`${url}/rest/v1/rpc/join_waitlist`, {
+          method: 'POST',
+          headers: {
+            apikey: key,
+            Authorization: `Bearer ${key}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email: address, source }),
+        })
     if (res.ok) return 'joined'
 
     const body = (await res.json().catch(() => null)) as { code?: string } | null

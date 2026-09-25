@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MAX_LENGTH } from '@/data/limits'
+import { useCaptcha } from '@/lib/captcha'
 import {
   AuthButton,
   AuthCard,
@@ -8,6 +9,7 @@ import {
   AuthLayout,
   AuthSubtitle,
   AuthTitle,
+  CaptchaSlot,
   TextField,
 } from './AuthUI'
 import { useAuthStore } from './useAuthStore'
@@ -19,7 +21,9 @@ export function SignUpPage() {
   const setPendingEmail = useAuthStore((s) => s.setPendingEmail)
   const offline = useAuthStore((s) => s.offline)
   const navigate = useNavigate()
+  const captcha = useCaptcha()
 
+  const [accessCode, setAccessCode] = useState('')
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -32,6 +36,10 @@ export function SignUpPage() {
     setError('')
 
     // Checked here so the user finds out before a round trip.
+    if (!accessCode.trim()) {
+      setError('Enter the early access password from your invite.')
+      return
+    }
     if (fullName.trim().length < 2) {
       setError('What should we call you?')
       return
@@ -48,7 +56,13 @@ export function SignUpPage() {
     setBusy(true)
     try {
       const address = email.trim()
-      const { needsVerification } = await signUp(address, password, fullName)
+      const { needsVerification } = await signUp(
+        address,
+        password,
+        fullName,
+        accessCode,
+        await captcha.token(),
+      )
       if (needsVerification) {
         setPendingEmail(address)
         navigate(`/verify?type=signup&email=${encodeURIComponent(address)}`, {
@@ -71,6 +85,19 @@ export function SignUpPage() {
         <AuthSubtitle>Make an account and build your first week.</AuthSubtitle>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-3.5">
+          {/* Plain text: it's shared in an invite, not a secret to hide, and
+              a third password field would confuse password managers. */}
+          <TextField
+            label="Early access password"
+            type="text"
+            autoComplete="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            placeholder="From your invite"
+            value={accessCode}
+            onChange={(e) => setAccessCode(e.target.value)}
+            required
+          />
           <TextField
             label="Your name"
             type="text"
@@ -105,6 +132,7 @@ export function SignUpPage() {
             required
           />
           <div className="pt-2">
+            <CaptchaSlot ref={captcha.ref} className="data-captcha-visible:mb-3" />
             <AuthButton type="submit" busy={busy} disabled={offline}>
               Create account
             </AuthButton>

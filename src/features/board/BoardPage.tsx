@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -20,7 +20,7 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { getEventCoordinates } from '@dnd-kit/utilities'
 import type { IsoDate, Task } from '@/data/types'
 import { cn } from '@/lib/cn'
-import { dayDateLabel, fromIso, startOfWeek, toIso, weekTitle } from '@/lib/date'
+import { addDays, dayDateLabel, fromIso, startOfWeek, toIso, weekTitle } from '@/lib/date'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import { useNavigate } from 'react-router-dom'
 import { BoardHeader } from './BoardHeader'
@@ -74,6 +74,9 @@ const belowFinger: Modifier = ({ activatorEvent, draggingNodeRect, transform }) 
   const x = Math.min(Math.max(fingerX - width / 2, 8), window.innerWidth - width - 8)
   return { ...transform, x: x - left, y: fingerY + 28 - top }
 }
+
+/** Sideways far enough, and mostly sideways, to be meant rather than a scroll that drifted. */
+const SWIPE_MIN_PX = 56
 
 const screenReaderInstructions = {
   draggable:
@@ -182,7 +185,58 @@ export function BoardPage() {
     return map
   }, [tasks])
 
+  /**
+   * A phone switches days with a sideways swipe on the day itself. Holding a
+   * task long enough to lift it makes the gesture a drag instead, so the
+   * swipe is dropped when a drag started during the same touch.
+   */
+  const swipe = useRef<{ x: number; y: number; dragged: boolean } | null>(null)
+
+  const startSwipe = (e: TouchEvent) => {
+    // A second finger is a pinch, not a swipe.
+    const touch = e.touches.length === 1 ? e.touches[0] : null
+    swipe.current = touch && { x: touch.clientX, y: touch.clientY, dragged: false }
+  }
+
+  const endSwipe = (e: TouchEvent) => {
+    const start = swipe.current
+    swipe.current = null
+    if (!start || start.dragged) return
+    const touch = e.changedTouches[0]
+    const dx = touch.clientX - start.x
+    const dy = touch.clientY - start.y
+    if (Math.abs(dx) < SWIPE_MIN_PX || Math.abs(dx) < 2 * Math.abs(dy)) return
+    selectDay(addDays(anchor, dx < 0 ? 1 : -1))
+  }
+
+  // The new day slides in from the side it came from, whether it was
+  // swiped to or picked in the strip. Kept in state rather than derived, so
+  // an unrelated render mid-slide doesn't cut it short.
+  const [entered, setEntered] = useState<{ day: IsoDate; from: 'next' | 'prev' | null }>({
+    day: selected,
+    from: null,
+  })
+  if (entered.day !== selected) {
+    setEntered({ day: selected, from: selected > entered.day ? 'next' : 'prev' })
+  }
+
+  /**
+   * Below xl the week is one row that scrolls sideways, so a week opens
+   * scrolled to the day it's anchored on: today, or the same weekday when
+   * moving between weeks.
+   */
+  const row = useRef<HTMLDivElement>(null)
+  const ready = pillars.length > 0
+  useEffect(() => {
+    const scroller = row.current
+    const day = scroller?.querySelector<HTMLElement>(`[aria-labelledby="day-${selected}"]`)
+    if (!scroller || !day) return
+    scroller.scrollLeft = day.offsetLeft - parseFloat(getComputedStyle(scroller).paddingLeft)
+    // On arriving at a week only, so `selected` is left out on purpose.
+  }, [weekStart, wide, ready])
+
   const handleDragStart = useCallback((event: DragStartEvent) => {
+    if (swipe.current) swipe.current.dragged = true
     setDraggingId(String(event.active.id))
   }, [])
 
@@ -402,9 +456,13 @@ export function BoardPage() {
           id="board"
           tabIndex={-1}
           aria-label="Your week"
+          onTouchStart={wide ? undefined : startSwipe}
+          onTouchEnd={wide ? undefined : endSwipe}
+          onTouchCancel={wide ? undefined : () => (swipe.current = null)}
           className={cn(
             'min-h-0 flex-1 px-4 pb-8 outline-none sm:px-6 md:px-8',
-            !wide && 'flex flex-col pt-3',
+            // Clipped so a day sliding in doesn't flash a sideways scrollbar.
+            !wide && 'flex flex-col overflow-x-clip pt-3',
           )}
         >
           {loading && pillars.length === 0 ? (
@@ -413,11 +471,29 @@ export function BoardPage() {
             </p>
           ) : wide ? (
             // Columns stretch into lanes rather than floating at the top.
-            <div className="grid h-full min-h-128 grid-cols-3 items-stretch gap-3 xl:grid-cols-7">
+            // Below xl seven don't fit, and wrapping them 3 / 3 / 1 broke the
+            // week's order, so they stay one row that scrolls sideways,
+            // running to the screen's edges and snapping to a day.
+            <div
+              ref={row}
+              className={cn(
+                'relative grid h-full min-h-128 items-stretch gap-3',
+                '-mx-8 grid-flow-col auto-cols-[minmax(13rem,1fr)] overflow-x-auto px-8',
+                'snap-x snap-mandatory scroll-px-8 [&>*]:snap-start',
+                'xl:mx-0 xl:grid-flow-row xl:grid-cols-7 xl:overflow-visible xl:px-0',
+              )}
+            >
               {days.map((date) => column(date))}
             </div>
           ) : (
-            column(days.find((d) => toIso(d) === selected) ?? days[0], 'flex-1')
+            column(
+              days.find((d) => toIso(d) === selected) ?? days[0],
+              cn(
+                'flex-1',
+                entered.from === 'next' && 'animate-step-forward',
+                entered.from === 'prev' && 'animate-step-back',
+              ),
+            )
           )}
         </main>
 

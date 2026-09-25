@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useCaptcha } from '@/lib/captcha'
 import { cn } from '@/lib/cn'
 import {
   AuthButton,
@@ -9,6 +10,7 @@ import {
   AuthNote,
   AuthSubtitle,
   AuthTitle,
+  CaptchaSlot,
   CodeInput,
 } from './AuthUI'
 import { useAuthStore } from './useAuthStore'
@@ -29,6 +31,7 @@ export function VerifyCodePage() {
 
   const [params] = useSearchParams()
   const navigate = useNavigate()
+  const captcha = useCaptcha()
 
   const type = params.get('type') === 'email' ? 'email' : 'signup'
   const email = params.get('email') ?? pendingEmail
@@ -55,7 +58,7 @@ export function VerifyCodePage() {
     setError('')
     setBusy(true)
     try {
-      await verifyCode(email, value, type)
+      await verifyCode(email, value, type, await captcha.token())
       navigate('/welcome', { replace: true })
     } catch (err) {
       setError(
@@ -73,7 +76,7 @@ export function VerifyCodePage() {
     setError('')
     setResent(false)
     try {
-      await resendCode(email, type)
+      await resendCode(email, type, await captcha.token())
       setResent(true)
       setCooldown(RESEND_COOLDOWN)
     } catch (err) {
@@ -106,6 +109,7 @@ export function VerifyCodePage() {
             disabled={busy}
           />
           <div className="pt-4">
+            <CaptchaSlot ref={captcha.ref} className="data-captcha-visible:mb-3" />
             <AuthButton
               type="submit"
               busy={busy}

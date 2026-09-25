@@ -2,12 +2,16 @@
 
 ## Blocked on a dashboard change
 
-- [ ] **Run `supabase/migrations/0003_waitlist.sql`, then
-      `0004_ownership_and_limits.sql`.** Until `0003` runs, the landing
-      page's form shows "Something went wrong" for every address. `0004` is
-      the database half of the Security section below; if it stops on a
-      constraint, an existing row already breaks that rule and the error
-      names it.
+- [ ] **Run `supabase/migrations/0003`, `0004` and `0005`, in that order.**
+      Until `0003` runs, the landing page's form shows "Something went wrong"
+      for every address. `0004` is the database half of the Security section
+      below; if it stops on a constraint, an existing row already breaks that
+      rule and the error names it. `0006` waits for CAPTCHA (Security).
+- [ ] **Set the early access password** once `0005` is in, or nobody can
+      make an account: `insert into private.early_access (code) values
+      ('…') on conflict (id) do update set code = excluded.code;` The same
+      line changes it. People invited from Authentication → Users → Invite
+      user skip it.
 
 - [ ] **Set the email code length to 6.** Supabase → Authentication → Sign In /
       Providers → Email → *Email OTP Length*. The project sends 8-digit codes,
@@ -65,38 +69,59 @@ what's left is mostly dashboard settings.
 - [ ] **Set the minimum password length to 8** on the same page. The app
       asks for 8, but Supabase defaults to 6 and a direct API call skips the
       app.
-- [ ] **CAPTCHA on sign-up** (Authentication → Attack Protection; Cloudflare
-      Turnstile is free), then pass its token in `signUp`, `signIn` and
-      `sendReset`. Until then a script can make the Gmail account send
-      confirmation mail to anyone. Also keep `{{ .Data.full_name }}` out of
-      the email templates: `0004` caps the name only when an account is
-      created.
-- [ ] **Rate-limit the waitlist** (moved from Landing page). Anyone can call
-      `join_waitlist()`. Fine at this size; before it matters, put it behind
-      an Edge Function with Turnstile, and forward to the email tool from
-      there.
-- [ ] **Run the Security Advisor** (Advisors → Security Advisor) once `0003`
-      and `0004` are in. It checks the live database, which the repo can't.
+- [x] **CAPTCHA, built and off** (2026-09-24). Cloudflare Turnstile on
+      sign-up, sign-in, forgot password, the code screen and the waitlist
+      (`src/lib/captcha.ts`); invisible unless Cloudflare wants a click. It
+      stays off until `VITE_TURNSTILE_SITE_KEY` is set. Tested in Chrome with
+      Cloudflare's test keys: tokens reach every call, a failed check says
+      so instead of hanging, and forms don't move while it's idle.
+- [x] **The waitlist behind Turnstile** (2026-09-24). With CAPTCHA on, the
+      form goes through the `join-waitlist` Edge Function, which checks the
+      token with Cloudflare first, and `0006` closes the direct route.
+- [ ] **Turn CAPTCHA on, after deploying** (Cloudflare needs the sites'
+      addresses). In this order, or sign-in or the waitlist breaks midway:
+      1. Cloudflare (free account) → Turnstile → Add widget: both sites'
+         domains, Managed. Keep the site key and the secret key.
+      2. Supabase → Edge Functions → Deploy a new function → Via Editor,
+         named `join-waitlist`, pasting
+         `supabase/functions/join-waitlist/index.ts`. Turn off its JWT
+         verification. Edge Functions → Secrets: `TURNSTILE_SECRET_KEY`.
+      3. Vercel: `VITE_TURNSTILE_SITE_KEY` on both projects, then redeploy.
+      4. Supabase → Authentication → Attack Protection → CAPTCHA on,
+         Turnstile, the secret key.
+      5. Run `0006`. Then try a sign-in and a waitlist sign-up.
 
-The CSP allows network calls to `https://*.supabase.co` and nothing else.
-Realtime would need `wss://*.supabase.co`, and any new outside script, font
-or analytics tool has to be added to `vercel.json` too, or browsers block it.
+      Until then a script can make the Gmail account send confirmation mail
+      to anyone. Also keep `{{ .Data.full_name }}` out of the email
+      templates: `0004` caps the name only when an account is created.
+- [ ] **Run the Security Advisor** (Advisors → Security Advisor) once `0003`
+      to `0005` are in. It checks the live database, which the repo can't.
+
+The CSP allows network calls to `https://*.supabase.co` and nothing else,
+plus Cloudflare's Turnstile script and frame. Realtime would need
+`wss://*.supabase.co`, and any new outside script, font or analytics tool has
+to be added to `vercel.json` too, or browsers block it.
 
 ## Known rough edges
 
-- [ ] **Task dialog drops one frame on first open per page load** (~42ms,
-      measured). Everything after is ~7ms. Cause is first-paint of that
-      subtree; parking it off-screen and pre-seeding its content got it from
-      ~56ms down, but not to zero. Deferred deliberately.
-- [ ] **Swipe between days on a phone.** The single-day view switches days
-      from the strip only. A horizontal swipe on the day itself would be the
-      expected gesture, but it has to stay out of the way of a task drag.
-- [ ] **Test the phone view on a real iPhone.** Verified in Chrome's touch
-      emulation (tap, press-and-hold drag, scrolling, sticky strip), not in iOS
-      Safari itself — long-press text selection is the thing most likely to
-      differ.
-- [ ] **Tablet portrait (768–1279px)** still gets the 3-column grid, so the
-      week wraps as 3 / 3 / 1. Works, but it's the next layout worth a look.
+- [ ] **Task dialog drops one frame on first open per page load** (~50ms in
+      a production build; every later open, whatever it shows, ~17). Deferred
+      deliberately. Ruled out on 2026-09-24, each measured: React's work
+      (same both opens), painting the panel (a warm-up paint at load cut
+      raster 10ms → 4ms but not the frame), the backdrop fade and panel
+      slide (off, still slow), and the text field's first focus. Inside the
+      long frame the main thread is idle, waiting: one-time compositor or GPU
+      setup in Chrome, not anything this code does per open.
+- [x] **Swipe between days on a phone.** Done (2026-09-24): a sideways swipe
+      on the day moves one day, crossing into the next or previous week; the
+      new day slides in from that side, strip taps included. A mostly
+      vertical scroll, a short nudge, or a press-and-hold that lifts a task
+      doesn't count.
+- [x] **Test the phone view on a real iPhone.** Done (2026-09-24).
+- [x] **Tablet portrait (768–1279px).** Done (2026-09-24): below 1280px the
+      week is one row that scrolls sideways, edge to edge, snapping to a day
+      and opening on today, instead of wrapping 3 / 3 / 1. 1280 and up keep
+      all seven columns.
 - [x] **Name fields stop at the database's limits.** Done (2026-09-24):
       pillar names (40), goal titles (80) and task titles (200) failed to
       save past `0001`'s caps; every input for them now stops there, from one
@@ -109,28 +134,24 @@ or analytics tool has to be added to `vercel.json` too, or browsers block it.
       `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`, and `VITE_APP_URL`
       (the app's address, for the nav's early access sign-in; without it the
       link points at this site's own `/sign-in`).
-- [ ] **Confirm the roadmap's "Exploring" items** (`landing/RoadmapPage.tsx`):
-      repeating tasks, calendar alongside, phone reminders. They're
-      placeholders, labelled as ideas, not decisions.
-- [ ] **Beta is open, not gated.** "Early access sign in" goes to the app's
-      normal sign-in, and anyone can still make an account at `/sign-up`.
-      If early access should mean invited only, gate sign-up (an allowlist
-      table, or turn off sign-ups in Supabase and invite users).
-- [ ] **Pick an email tool** and import the list (Table Editor → Export CSV),
-      or forward new sign-ups to it automatically.
+- [x] **Roadmap's "Exploring" items confirmed** (2026-09-24): repeating
+      tasks, calendar alongside, phone reminders.
+- [x] **Beta is invite-only** (2026-09-24). Making an account needs the
+      early access password (`0005`), checked by the database so it can't be
+      skipped. Sign-in for existing accounts is unchanged.
+- [ ] **Pick an email tool: Mailchimp or Klaviyo.** Mailchimp is the better
+      fit for a waitlist: Klaviyo is built around online-store data (orders,
+      carts, Shopify), none of which Pillars has. Import the list from Table
+      Editor → Export CSV; forwarding new sign-ups automatically can go in the
+      `join-waitlist` function once one is picked.
 - [ ] An Open Graph image, once there's a domain to host it on.
 
 ## Accessibility
 
 - [x] **Move the app's buttons to `--gradient-primary-strong`.** Done
       (2026-09-23) through the shared `.btn-primary` class in `tokens.css`.
-- [ ] **Test with a real screen reader.** axe-core reports zero WCAG 2.2 AA
-      violations on all 14 screens and states (landing, roadmap, board on
-      desktop and phone, task dialog, goals panel, check-in, weekly banner and
-      review, settings, sign-in, sign-up, onboarding), and keyboard flows pass
-      in Chrome. A person still needs to run VoiceOver (macOS, iOS) and NVDA
-      through: sign in, add a task, move it by keyboard, complete it, the
-      evening check-in, the weekly review, settings.
+- [x] **Test with a real screen reader.** Done (2026-09-24), on top of
+      axe-core's zero WCAG 2.2 AA violations across all 14 screens.
 
 - [ ] **Set `VITE_SUPPORT_EMAIL` and `VITE_LANDING_URL`** for the app. Help &
       Support shows no contact line, and About Us no roadmap link, until they're set.

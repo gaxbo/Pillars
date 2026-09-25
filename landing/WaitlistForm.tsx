@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import { useCaptcha } from '@/lib/captcha'
 import { cn } from '@/lib/cn'
 import { joinWaitlist, looksLikeEmail, type JoinResult } from './waitlist'
 
@@ -22,6 +23,7 @@ export function WaitlistForm({ source, inputId, className }: WaitlistFormProps) 
   const [trap, setTrap] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const doneRef = useRef<HTMLDivElement>(null)
+  const captcha = useCaptcha()
 
   // The form, and the button that was focused, are replaced by the result.
   // Focus follows it, or a keyboard user would be dropped back at the top.
@@ -46,7 +48,14 @@ export function WaitlistForm({ source, inputId, className }: WaitlistFormProps) 
     }
 
     setStatus('sending')
-    setStatus(await joinWaitlist(address, source))
+    let token: string | undefined
+    try {
+      token = await captcha.token()
+    } catch {
+      setStatus('error')
+      return
+    }
+    setStatus(await joinWaitlist(address, source, token))
   }
 
   if (finished) {
@@ -115,6 +124,10 @@ export function WaitlistForm({ source, inputId, className }: WaitlistFormProps) 
             {status === 'sending' ? 'Joining…' : 'Join the list'}
           </button>
         </div>
+
+        {/* Turnstile's widget, if it wants a click (lib/captcha). Empty, the
+            negative margin takes back the column gap it would add. */}
+        <div ref={captcha.ref} className="-mt-2 data-captcha-visible:mt-0" />
 
         {/* Off-screen and unlabelled for people; bots fill every field. */}
         <input

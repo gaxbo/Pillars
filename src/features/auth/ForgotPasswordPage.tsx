@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useCaptcha } from '@/lib/captcha'
 import {
   AuthButton,
   AuthCard,
@@ -7,6 +8,7 @@ import {
   AuthLayout,
   AuthSubtitle,
   AuthTitle,
+  CaptchaSlot,
   TextField,
 } from './AuthUI'
 import { useAuthStore } from './useAuthStore'
@@ -16,6 +18,7 @@ export function ForgotPasswordPage() {
   const offline = useAuthStore((s) => s.offline)
   const setPendingEmail = useAuthStore((s) => s.setPendingEmail)
   const navigate = useNavigate()
+  const captcha = useCaptcha()
 
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
@@ -27,7 +30,7 @@ export function ForgotPasswordPage() {
     setBusy(true)
     try {
       const address = email.trim()
-      await sendReset(address)
+      await sendReset(address, await captcha.token())
       setPendingEmail(address)
       navigate(`/reset-link-sent?email=${encodeURIComponent(address)}`)
     } catch (err) {
@@ -53,6 +56,7 @@ export function ForgotPasswordPage() {
             required
           />
           <div className="pt-1">
+            <CaptchaSlot ref={captcha.ref} className="data-captcha-visible:mb-3" />
             <AuthButton type="submit" busy={busy} disabled={offline}>
               Continue
             </AuthButton>

@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react'
+import { useId, type ReactNode, type Ref } from 'react'
 import { cn } from '@/lib/cn'
 import { AuthShowcase } from './AuthShowcase'
 
@@ -156,6 +156,14 @@ export function AuthError({ children }: { children: ReactNode }) {
       {children}
     </p>
   )
+}
+
+/**
+ * Where Turnstile's widget appears if it wants a click (see lib/captcha).
+ * Takes no space otherwise; give spacing with `data-captcha-visible:`.
+ */
+export function CaptchaSlot({ ref, className }: { ref: Ref<HTMLDivElement>; className?: string }) {
+  return <div ref={ref} className={cn('flex justify-center', className)} />
 }
 
 export function AuthNote({ children }: { children: ReactNode }) {

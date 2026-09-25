@@ -17,20 +17,29 @@ interface AuthState {
   recovering: boolean
 
   init: () => () => void
-  signIn: (email: string, password: string) => Promise<void>
+  // `captchaToken` is from useCaptcha(); undefined while CAPTCHA is off.
+  signIn: (email: string, password: string, captchaToken?: string) => Promise<void>
   signUp: (
     email: string,
     password: string,
     fullName: string,
+    /** The early access password; supabase/migrations/0005 checks it. */
+    accessCode: string,
+    captchaToken?: string,
   ) => Promise<{ needsVerification: boolean }>
   signOut: () => Promise<void>
   /** The address awaiting a code, so the verify screen survives a refresh. */
   pendingEmail: string
   setPendingEmail: (email: string) => void
 
-  verifyCode: (email: string, token: string, type: 'signup' | 'email') => Promise<void>
-  resendCode: (email: string, type: 'signup' | 'email') => Promise<void>
-  sendReset: (email: string) => Promise<void>
+  verifyCode: (
+    email: string,
+    token: string,
+    type: 'signup' | 'email',
+    captchaToken?: string,
+  ) => Promise<void>
+  resendCode: (email: string, type: 'signup' | 'email', captchaToken?: string) => Promise<void>
+  sendReset: (email: string, captchaToken?: string) => Promise<void>
   updatePassword: (password: string) => Promise<void>
 }
 
@@ -94,37 +103,42 @@ export const useAuthStore = create<AuthState>((set, get) => ({
    * template; this verifies the code path. `signup` confirms a new account,
    * `email` confirms a sign-in challenge.
    */
-  async verifyCode(email, token, type) {
+  async verifyCode(email, token, type, captchaToken) {
     const { error } = await requireClient().auth.verifyOtp({
       email,
       token: token.trim(),
       type,
+      options: { captchaToken },
     })
     fail(error)
     writePendingEmail('')
     set({ pendingEmail: '' })
   },
 
-  async resendCode(email, type) {
+  async resendCode(email, type, captchaToken) {
     const client = requireClient()
     // resend() only covers signup and change flows; a fresh sign-in
     // challenge is issued by requesting a new one.
     const { error } =
       type === 'signup'
-        ? await client.auth.resend({ type: 'signup', email })
+        ? await client.auth.resend({ type: 'signup', email, options: { captchaToken } })
         : await client.auth.signInWithOtp({
             email,
-            options: { shouldCreateUser: false },
+            options: { shouldCreateUser: false, captchaToken },
           })
     fail(error)
   },
 
-  async signIn(email, password) {
-    const { error } = await requireClient().auth.signInWithPassword({ email, password })
+  async signIn(email, password, captchaToken) {
+    const { error } = await requireClient().auth.signInWithPassword({
+      email,
+      password,
+      options: { captchaToken },
+    })
     fail(error)
   },
 
-  async signUp(email, password, fullName) {
+  async signUp(email, password, fullName, accessCode, captchaToken) {
     const { data, error } = await requireClient().auth.signUp({
       email,
       password,
@@ -132,9 +146,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         emailRedirectTo: `${window.location.origin}/`,
         // Lands in auth.users.raw_user_meta_data, which the email templates
         // can read as {{ .Data.full_name }}; a trigger mirrors it to profiles.
-        data: { full_name: fullName.trim() },
+        // access_code is checked and stripped before the row is written.
+        data: { full_name: fullName.trim(), access_code: accessCode.trim() },
+        captchaToken,
       },
     })
+    // The early access trigger can only fail the insert, and Supabase
+    // reports any failed insert the same way.
+    if (error && /database error saving new user/i.test(error.message)) {
+      throw new Error("That early access password isn't right. Check your invite and try again.")
+    }
     fail(error)
     // With email confirmation on, Supabase returns a user but no session.
     return { needsVerification: !data.session }
@@ -146,9 +167,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ session: null, user: null, recovering: false })
   },
 
-  async sendReset(email) {
+  async sendReset(email, captchaToken) {
     const { error } = await requireClient().auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
+      captchaToken,
     })
     fail(error)
   },

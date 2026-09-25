@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useCaptcha } from '@/lib/captcha'
 import {
   AuthButton,
   AuthCard,
@@ -8,6 +9,7 @@ import {
   AuthNote,
   AuthSubtitle,
   AuthTitle,
+  CaptchaSlot,
   TextField,
 } from './AuthUI'
 import { useAuthStore } from './useAuthStore'
@@ -17,6 +19,7 @@ export function SignInPage() {
   const offline = useAuthStore((s) => s.offline)
   const setPendingEmail = useAuthStore((s) => s.setPendingEmail)
   const navigate = useNavigate()
+  const captcha = useCaptcha()
   // The landing page's "Early access" link lands here with ?access=early.
   const [params] = useSearchParams()
   const early = params.get('access') === 'early'
@@ -32,7 +35,7 @@ export function SignInPage() {
     setBusy(true)
     const address = email.trim()
     try {
-      await signIn(address, password)
+      await signIn(address, password, await captcha.token())
       navigate('/', { replace: true })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Could not sign in.'
@@ -83,6 +86,7 @@ export function SignInPage() {
             required
           />
           <div className="pt-2">
+            <CaptchaSlot ref={captcha.ref} className="data-captcha-visible:mb-3" />
             <AuthButton type="submit" busy={busy} disabled={offline}>
               Sign In
             </AuthButton>

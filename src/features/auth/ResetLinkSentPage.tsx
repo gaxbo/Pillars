@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useCaptcha } from '@/lib/captcha'
 import { cn } from '@/lib/cn'
-import { CenteredState, CheckMark } from './AuthUI'
+import { CaptchaSlot, CenteredState, CheckMark } from './AuthUI'
 import { useAuthStore } from './useAuthStore'
 
 const RESEND_COOLDOWN = 30
@@ -12,6 +13,7 @@ export function ResetLinkSentPage() {
   const pendingEmail = useAuthStore((s) => s.pendingEmail)
   const [params] = useSearchParams()
   const navigate = useNavigate()
+  const captcha = useCaptcha()
 
   const email = params.get('email') ?? pendingEmail
 
@@ -30,7 +32,7 @@ export function ResetLinkSentPage() {
     setError('')
     setNote('')
     try {
-      await sendReset(email)
+      await sendReset(email, await captcha.token())
       setNote('Another link is on its way.')
       setCooldown(RESEND_COOLDOWN)
     } catch (err) {
@@ -70,6 +72,8 @@ export function ResetLinkSentPage() {
           {cooldown > 0 ? `Send another link in ${cooldown}s` : 'Send another link'}
         </button>
       </div>
+
+      <CaptchaSlot ref={captcha.ref} className="data-captcha-visible:mt-5" />
 
       {note && <p className="mt-5 text-[13px] text-blue-700">{note}</p>}
       {error && (

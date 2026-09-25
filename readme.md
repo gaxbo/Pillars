@@ -27,10 +27,14 @@ npm run dev
 The app runs on sample data with no setup. To use real accounts:
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. Run `supabase/migrations/0001_init.sql` in the SQL editor.
-3. `cp .env.example .env` and fill in the URL and anon key from
+2. Run `supabase/migrations/0001` through `0005` in the SQL editor, in
+   order. Leave `0006` until CAPTCHA is on (TODO.md, Security).
+3. Set the early access password, which new accounts need (`0005`):
+   `insert into private.early_access (code) values ('…')`. The file's header
+   has the line for changing it, and for opening sign-up to everyone.
+4. `cp .env.example .env` and fill in the URL and anon key from
    **Settings → API**.
-4. Under **Authentication → URL Configuration**, add `http://localhost:5173`
+5. Under **Authentication → URL Configuration**, add `http://localhost:5173`
    as a redirect URL so the reset-password link comes back to the app.
 
 Restart the dev server. `src/data/index.ts` picks the Supabase repository as
@@ -65,7 +69,7 @@ forgot   -> /reset-link-sent -> (email link) -> /reset-password -> board
 | Route | Screen |
 | --- | --- |
 | `/sign-in` | Split layout, email + password |
-| `/sign-up` | Email, password, confirm |
+| `/sign-up` | Early access password, name, email, password, confirm |
 | `/verify` | "Check your email" — 6-digit code, resend on a 30s cooldown |
 | `/welcome` | "All set! Logging you in." then redirects |
 | `/forgot-password` | "Enter your email" |
@@ -91,7 +95,8 @@ stays private.
   already there; nobody can read the list through the API. Export it from
   Table Editor → `waitlist` → Export to CSV, then import into whichever email
   tool you pick. `source` says which form (hero or footer) each address came
-  from.
+  from. With CAPTCHA on, the form goes through the `join-waitlist` Edge
+  Function (`supabase/functions/`), which checks the Turnstile token first.
 - **Screenshots** in `landing/public/shots/` are real captures of the app on
   sample data. Re-run `npm run shots:landing` after changing the app's look.
   The script refuses to capture text containing an em or en dash.

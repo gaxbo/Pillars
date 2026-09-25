@@ -11,6 +11,8 @@ interface ImportMetaEnv {
   readonly VITE_SUPPORT_EMAIL?: string
   /** App only: the landing site, linked from About Us for its roadmap. */
   readonly VITE_LANDING_URL?: string
+  /** Cloudflare Turnstile's site key. CAPTCHA is off until it's set. */
+  readonly VITE_TURNSTILE_SITE_KEY?: string
 }
 
 interface ImportMeta {
