@@ -79,7 +79,9 @@ what's left is mostly dashboard settings.
 - [x] **The waitlist behind Turnstile** (2026-09-24). With CAPTCHA on, the
       form goes through the `join-waitlist` Edge Function, which checks the
       token with Cloudflare first, and `0007` closes the direct route.
-- [ ] **Turn CAPTCHA on, after deploying** (Cloudflare needs the sites'
+- [ ] **Turn CAPTCHA on, after deploying** (2026-09-25: steps 1, 2, 3 and 5
+      done and checked live; step 4, Supabase's switch, being re-enabled
+      after a blank Vercel variable hid the key. See Notes to self) (Cloudflare needs the sites'
       addresses). In this order, or sign-in or the waitlist breaks midway:
       1. Cloudflare (free account) → Turnstile → Add widget: both sites'
          domains, Managed. Keep the site key and the secret key.
@@ -191,6 +193,20 @@ to be added to `vercel.json` too, or browsers block it.
       redeploys both.
 
 ## Notes to self
+
+- **A variable in Vercel's dashboard beats `.env.production`, even when it's
+  blank.** Vercel saved `VITE_TURNSTILE_SITE_KEY` and `VITE_SUPPORT_EMAIL`
+  as empty values, and they silently erased the file's values from the
+  build. Public `VITE_` settings live only in `.env.production`; Vercel holds
+  only `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and (landing)
+  `VITE_APP_URL`.
+- **Turnstile's key doesn't allow `localhost`**, so with Supabase enforcing
+  CAPTCHA, signing in to the real project from a dev server fails. Add
+  `localhost` to the widget's hostnames in Cloudflare, or work locally in
+  sample mode (`VITE_BYPASS_AUTH=true`).
+- **Checking a deploy:** a build without the Turnstile key compiles to the
+  same file whichever commit it's from (the CAPTCHA code drops out), so
+  compare what's *in* the live bundle, not its filename.
 
 - **`pkill -f vite` does not kill Vite on Windows.** It leaves the node
   process alive holding the port, so the next `vite` grabs 5174, 5175, … while
