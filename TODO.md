@@ -17,11 +17,12 @@
       Providers → Email → *Email OTP Length*. The project sends 8-digit codes,
       but `/verify` takes exactly six (`CodeInput` trims to 6), so every
       sign-up is stuck on that screen until this changes.
-- [ ] Add the deployed origin as a redirect URL once there is one
-      (Authentication → URL Configuration). `http://localhost:5173` is enough
-      for now. Add exact addresses: a wildcard like `https://*.vercel.app/**`
-      would let any Vercel site receive sign-in and reset links, tokens
-      included.
+- [ ] **Point Supabase at the live app** (Authentication → URL
+      Configuration): Site URL `https://pillars-app-zeta.vercel.app`, and add
+      `https://pillars-app-zeta.vercel.app/**` to Redirect URLs next to the
+      localhost one. Only this exact address: a wildcard like
+      `https://*.vercel.app/**` would let any Vercel site receive sign-in and
+      reset links, tokens included.
 - [ ] **Move sign-up email off personal Gmail before real launch.** Custom SMTP
       is `smtp.gmail.com` with an App Password: fine for testers (~500/day),
       but mail comes from a personal address. A domain plus Resend or similar.
@@ -136,11 +137,10 @@ to be added to `vercel.json` too, or browsers block it.
 
 ## Landing page
 
-- [ ] **Deploy it** as its own Vercel project: same repo, Build
-      `npm run build:landing`, Output `dist-landing`, env vars
-      `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`, and `VITE_APP_URL`
-      (the app's address, for the nav's early access sign-in; without it the
-      link points at this site's own `/sign-in`).
+- [x] **Deployed** (2026-09-25) at https://pillars-azure.vercel.app, its own
+      Vercel project from this repo (Build `npm run build:landing`, Output
+      `dist-landing`). `VITE_APP_URL` is set there; a missing `https://` in
+      it is tolerated (`src/lib/url.ts`).
 - [x] **Roadmap's "Exploring" items confirmed** (2026-09-24): repeating
       tasks, calendar alongside, phone reminders.
 - [x] **Beta is invite-only** (2026-09-24). Making an account needs the
@@ -156,11 +156,9 @@ to be added to `vercel.json` too, or browsers block it.
       on both sites, the logo in the landing nav and footer and on sign in
       and sign up. Files and usage
       in `brand/`; rebuild with `npm run brand`.
-- [ ] **Turn on the link preview once there's a domain.** The image is ready
-      at `landing/public/og.png`. Add `<meta property="og:image"
-      content="https://<domain>/og.png">` to `landing/index.html` and switch
-      `twitter:card` to `summary_large_image`: most sites won't load a
-      preview image from a relative address.
+- [x] **Link preview on** (2026-09-25): `landing/public/og.png`, with
+      absolute `og:image` and `og:url` in `landing/index.html`. If the landing
+      moves to its own domain, update those two addresses.
 
 ## Accessibility
 
@@ -169,8 +167,10 @@ to be added to `vercel.json` too, or browsers block it.
 - [x] **Test with a real screen reader.** Done (2026-09-24), on top of
       axe-core's zero WCAG 2.2 AA violations across all 14 screens.
 
-- [ ] **Set `VITE_SUPPORT_EMAIL` and `VITE_LANDING_URL`** for the app. Help &
-      Support shows no contact line, and About Us no roadmap link, until they're set.
+- [ ] **Set `VITE_SUPPORT_EMAIL`** for the app: Help & Support shows no
+      contact line until it is. Add it to `.env.production` (Vercel's
+      "Sensitive" rule won't save `VITE_` names), next to `VITE_LANDING_URL`,
+      which is done.
 
 ## Done 2026-09-23
 
@@ -186,7 +186,9 @@ to be added to `vercel.json` too, or browsers block it.
 
 ## Housekeeping
 
-- [ ] Deploy somewhere (Vercel/Netlify) so testers get a URL.
+- [x] Deployed (2026-09-25): the app at https://pillars-app-zeta.vercel.app,
+      the landing at https://pillars-azure.vercel.app. Every push to `main`
+      redeploys both.
 
 ## Notes to self
 

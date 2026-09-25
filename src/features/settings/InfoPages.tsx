@@ -1,14 +1,15 @@
+import { siteUrl } from '@/lib/url'
 import { SettingsShell } from './SettingsPage'
 
 /** Optional; the contact line only appears once there's an address to show. */
 const SUPPORT_EMAIL = import.meta.env.VITE_SUPPORT_EMAIL
 /** Optional; the landing site, for its roadmap page. */
-const LANDING_URL = (import.meta.env.VITE_LANDING_URL ?? '').replace(/\/$/, '')
+const LANDING_URL = siteUrl(import.meta.env.VITE_LANDING_URL)
 
 const FAQ: [question: string, answer: string][] = [
   [
     'What is a pillar?',
-    'An area of your life you’ve chosen to invest in, like Health or People. Your pillars sit under every day on the board, so you can see which ones are getting time and which aren’t.',
+    'An area of your life you’ve chosen to invest in, like Fitness or Family. Your pillars sit under every day on the board, so you can see which ones are getting time and which aren’t.',
   ],
   [
     'How do goals count?',
