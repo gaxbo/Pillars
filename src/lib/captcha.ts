@@ -59,7 +59,7 @@ function loadTurnstile(): Promise<Turnstile> {
  */
 export function useCaptcha() {
   const ref = useRef<HTMLDivElement>(null)
-  const widget = useRef<Promise<{ api: Turnstile; id: string }> | null>(null)
+  const widget = useRef<Promise<{ api: Turnstile; id: string } | null> | null>(null)
   const pending = useRef<{ resolve: (token: string) => void; reject: (error: Error) => void } | null>(null)
 
   useEffect(() => {
@@ -73,7 +73,12 @@ export function useCaptcha() {
       else waiting?.reject(new Error(FAILED))
     }
 
-    const mounted = loadTurnstile().then((api) => ({
+    // A cleanup can run before the script has loaded: React mounts twice in
+    // development. The cancelled mount must not render, or the second render
+    // is refused ("already rendered") and the first one's cleanup then
+    // removes the only widget, leaving the form nothing to run.
+    let cancelled = false
+    const mounted = loadTurnstile().then((api) => cancelled ? null : ({
       api,
       id: api.render(el, {
         sitekey: SITE_KEY,
@@ -95,18 +100,27 @@ export function useCaptcha() {
     mounted.catch(() => {})
 
     return () => {
+      cancelled = true
       widget.current = null
-      void mounted.then(({ api, id }) => api.remove(id)).catch(() => {})
+      void mounted.then((w) => w && w.api.remove(w.id)).catch(() => {})
     }
   }, [])
 
   const token = useCallback(async (): Promise<string | undefined> => {
     if (!SITE_KEY) return undefined
-    const { api, id } = await (widget.current ?? Promise.reject(new Error(FAILED)))
+    const mounted = await (widget.current ?? Promise.reject(new Error(FAILED)))
+    if (!mounted) throw new Error(FAILED)
+    const { api, id } = mounted
     return new Promise<string>((resolve, reject) => {
       pending.current?.reject(new Error(FAILED))
       pending.current = { resolve, reject }
-      api.reset(id)
+      // Clears the last, spent token. Turnstile throws when there's nothing
+      // to clear yet; that's fine, execute() below still runs.
+      try {
+        api.reset(id)
+      } catch {
+        // First run.
+      }
       api.execute(id)
     })
   }, [])
