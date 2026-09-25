@@ -224,19 +224,32 @@ export const useOnboardingStore = create<OnboardingState>((set, get) => ({
     try {
       const weekStart = toIso(startOfWeek(new Date()))
 
-      for (const draft of pillars) {
-        const pillar = await repository.createPillar(draft.name.trim())
+      // Safe to run again after a failure partway through. Someone still in
+      // onboarding has no real data, so anything already saved is from an
+      // earlier attempt: a pillar of the same name is reused, not doubled,
+      // its goal is updated rather than added twice, and leftovers that
+      // aren't in the final list are archived.
+      const existing = await repository.listPillars()
+      const existingGoals = await repository.listGoals(weekStart)
+      const byName = new Map(existing.map((p) => [p.name.trim().toLowerCase(), p]))
+      const kept = new Set<string>()
 
-        for (const goal of draft.goals) {
-          const title = goal.title.trim()
-          if (!title) continue
-          await repository.createGoal({
-            pillarId: pillar.id,
-            title,
-            target: Math.max(1, goal.target),
-            weekStart,
-          })
-        }
+      for (const draft of pillars) {
+        const name = draft.name.trim()
+        const pillar = byName.get(name.toLowerCase()) ?? (await repository.createPillar(name))
+        kept.add(pillar.id)
+
+        // One goal per pillar per week, as the database requires.
+        const goal = draft.goals.find((g) => g.title.trim())
+        if (!goal) continue
+        const fields = { title: goal.title.trim(), target: Math.max(1, goal.target) }
+        const saved = existingGoals.find((g) => g.pillarId === pillar.id)
+        if (saved) await repository.updateGoal(saved.id, fields)
+        else await repository.createGoal({ pillarId: pillar.id, ...fields, weekStart })
+      }
+
+      for (const leftover of existing) {
+        if (!kept.has(leftover.id)) await repository.archivePillar(leftover.id)
       }
 
       await repository.updateProfile({

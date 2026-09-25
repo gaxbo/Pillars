@@ -134,11 +134,16 @@ export function GoalEditor({
             ))}
           </ul>
 
-          <div className="pt-3">
-            <InlineAction onClick={() => onAdd(pillar.id)}>
-              + Add a goal
-            </InlineAction>
-          </div>
+          {/* One goal per pillar per week: the database holds it to that
+              (goals_pillar_id_week_start_key), and the board links new tasks
+              to the pillar's goal. Removing it brings the link back. */}
+          {pillar.goals.length === 0 && (
+            <div className="pt-3">
+              <InlineAction onClick={() => onAdd(pillar.id)}>
+                + Add a goal
+              </InlineAction>
+            </div>
+          )}
         </section>
       ))}
     </>
