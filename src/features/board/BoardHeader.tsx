@@ -303,9 +303,11 @@ function MenuRow({
 export function ChevronButton({
   direction,
   onClick,
+  className,
 }: {
   direction: 'prev' | 'next'
   onClick: () => void
+  className?: string
 }) {
   const prev = direction === 'prev'
   return (
@@ -319,6 +321,7 @@ export function ChevronButton({
         'hover:border-blue-500 hover:bg-blue-100 hover:text-blue-900',
         'active:bg-blue-200',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700',
+        className,
       )}
     >
       <svg viewBox="0 0 16 16" className="size-3.5" aria-hidden="true">

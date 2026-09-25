@@ -40,8 +40,9 @@ export function DumpStep() {
   return (
     <StepBody>
       <StepHeading title="What&rsquo;s been on your mind recently?">
-        No need to organize it. Write down a thought, press enter, add or remove
-        as many as you need.
+        Write down a thought and press enter, as many as you like. No need to
+        organize them: we&rsquo;ll use what you write to suggest the Pillars
+        that fit you best.
       </StepHeading>
 
       <input

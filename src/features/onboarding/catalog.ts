@@ -24,7 +24,7 @@ export const ARCHETYPES: Archetype[] = [
       'You are making something of your own. The work is exciting, and it quietly eats everything else.',
     keywords: [
       'launch', 'ship', 'build', 'startup', 'business', 'project', 'product',
-      'design', 'code', 'client', 'freelance', 'revenue', 'pitch', 'launch',
+      'design', 'code', 'client', 'freelance', 'revenue', 'pitch',
     ],
   },
   {
@@ -78,12 +78,18 @@ export const ARCHETYPES: Archetype[] = [
   },
 ]
 
+/**
+ * No pillar name appears in two templates. Shared names (five sets had
+ * Health, five had Money) made the choices read as the same list reshuffled;
+ * each set now names things the way that life does: a builder's money is
+ * Runway, a caretaker's is Budget.
+ */
 export const TEMPLATES: PillarTemplate[] = [
   {
     id: 'ship-and-stay-whole',
     name: 'Ship and Stay Whole',
     blurb: 'For building something without disappearing into it.',
-    pillars: ['Craft', 'Health', 'Money', 'People', 'Mind'],
+    pillars: ['Build', 'Audience', 'Runway', 'Energy', 'Loved Ones'],
     archetypes: ['builder'],
     keywords: [
       'ship', 'launch', 'build', 'product', 'client', 'revenue', 'design',
@@ -94,7 +100,7 @@ export const TEMPLATES: PillarTemplate[] = [
     id: 'hold-the-line',
     name: 'Hold the Line',
     blurb: 'For a job that would take everything if you let it.',
-    pillars: ['Work', 'Body', 'Home', 'Money', 'Rest'],
+    pillars: ['Day Job', 'Boundaries', 'Training', 'Household', 'Downtime'],
     archetypes: ['operator'],
     keywords: [
       'work', 'job', 'deadline', 'meetings', 'promotion', 'overtime', 'boss',
@@ -105,7 +111,7 @@ export const TEMPLATES: PillarTemplate[] = [
     id: 'people-first',
     name: 'People First',
     blurb: 'For a life with other people in it who need you.',
-    pillars: ['People', 'Home', 'Health', 'Money', 'Self'],
+    pillars: ['Family', 'Logistics', 'Budget', 'My Health', 'Me Time'],
     archetypes: ['caretaker'],
     keywords: [
       'kids', 'family', 'partner', 'parents', 'home', 'cooking', 'school',
@@ -116,7 +122,7 @@ export const TEMPLATES: PillarTemplate[] = [
     id: 'back-on-your-feet',
     name: 'Back On Your Feet',
     blurb: 'Small, unglamorous, repeatable. For rebuilding a base.',
-    pillars: ['Health', 'Mind', 'Money', 'People', 'Routine'],
+    pillars: ['Sleep', 'Headspace', 'Daily Basics', 'Money Reset', 'Support'],
     archetypes: ['rebuilder'],
     keywords: [
       'sleep', 'therapy', 'recovery', 'anxiety', 'habits', 'routine', 'debt',
@@ -127,7 +133,7 @@ export const TEMPLATES: PillarTemplate[] = [
     id: 'learn-deep',
     name: 'Learn Deep',
     blurb: 'For carrying real study alongside a full life.',
-    pillars: ['Study', 'Health', 'Craft', 'People', 'Rest'],
+    pillars: ['Coursework', 'Practice', 'Reading', 'Rest Days', 'Social Life'],
     archetypes: ['student'],
     keywords: [
       'study', 'exam', 'course', 'degree', 'practice', 'reading', 'research',
@@ -138,7 +144,7 @@ export const TEMPLATES: PillarTemplate[] = [
     id: 'the-good-week',
     name: 'The Good Week',
     blurb: 'A balanced default, for making good weeks repeatable.',
-    pillars: ['Health', 'Craft', 'People', 'Money', 'Mind'],
+    pillars: ['Fitness', 'Hobbies', 'Friends', 'Savings', 'Habits'],
     archetypes: ['steady'],
     keywords: [
       'balance', 'consistency', 'fitness', 'hobby', 'friends', 'savings',

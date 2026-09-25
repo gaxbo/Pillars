@@ -339,6 +339,7 @@ export function BoardPage() {
     const iso = toIso(date)
     return (
       <DayColumn
+        variant={wide ? 'lane' : 'list'}
         key={iso}
         date={date}
         iso={iso}
@@ -462,7 +463,7 @@ export function BoardPage() {
           className={cn(
             'min-h-0 flex-1 px-4 pb-8 outline-none sm:px-6 md:px-8',
             // Clipped so a day sliding in doesn't flash a sideways scrollbar.
-            !wide && 'flex flex-col overflow-x-clip pt-3',
+            !wide && 'flex flex-col overflow-x-clip pt-4',
           )}
         >
           {loading && pillars.length === 0 ? (
@@ -489,7 +490,6 @@ export function BoardPage() {
             column(
               days.find((d) => toIso(d) === selected) ?? days[0],
               cn(
-                'flex-1',
                 entered.from === 'next' && 'animate-step-forward',
                 entered.from === 'prev' && 'animate-step-back',
               ),

@@ -7,6 +7,7 @@ import { PillarsStep } from './steps/PillarsStep'
 import { PlanTimeStep } from './steps/PlanTimeStep'
 import { TemplatesStep } from './steps/TemplatesStep'
 import {
+  STEPS,
   STEP_LABEL,
   STEP_SEGMENT,
   useOnboardingStore,
@@ -25,6 +26,8 @@ const SCREENS: Record<Step, () => React.ReactElement> = {
 export function OnboardingPage() {
   const step = useOnboardingStore((s) => s.step)
   const direction = useOnboardingStore((s) => s.direction)
+  const back = useOnboardingStore((s) => s.back)
+  const saving = useOnboardingStore((s) => s.saving)
   const Screen = SCREENS[step]
 
   // Steps differ in height, so without this a long step followed by a short
@@ -48,7 +51,12 @@ export function OnboardingPage() {
   return (
     <div className="min-h-full overflow-x-hidden">
       <header>
-        <StepProgress label={STEP_LABEL[step]} segment={STEP_SEGMENT[step]} />
+        <StepProgress
+          label={STEP_LABEL[step]}
+          segment={STEP_SEGMENT[step]}
+          // Nothing before the first step, and nowhere to go mid-save.
+          onBack={step === STEPS[0] || saving ? undefined : back}
+        />
       </header>
 
       {/*

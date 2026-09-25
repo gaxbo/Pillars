@@ -72,6 +72,6 @@ export function matchTemplates(
   // Stable ordering: ties fall back to catalog order rather than reshuffling
   // on every render.
   return scored.sort(
-    (a, b) => b.score - a.score || a.template.id.localeCompare(b.template.id),
+    (a, b) => b.score - a.score || TEMPLATES.indexOf(a.template) - TEMPLATES.indexOf(b.template),
   )
 }

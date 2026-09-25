@@ -16,6 +16,11 @@ interface PillarBlockProps {
   onToggle: (id: string) => void
   onOpen: (id: string) => void
   onAdd: (date: IsoDate, pillarId: string) => void
+  /**
+   * `card`: its own surface, in a week-grid column. `section`: one of a
+   * phone day's sections, sharing a single card, split by hairlines.
+   */
+  variant?: 'card' | 'section'
 }
 
 /**
@@ -40,6 +45,7 @@ export const PillarBlock = memo(function PillarBlock({
   onToggle,
   onOpen,
   onAdd,
+  variant = 'card',
 }: PillarBlockProps) {
   const id = cellId(date, pillar.id)
   const { setNodeRef, isOver } = useDroppable({ id })
@@ -51,6 +57,85 @@ export const PillarBlock = memo(function PillarBlock({
     month: 'short',
   })
 
+  const addLabel = `Add a task to ${pillar.name}, ${spoken}`
+
+  if (variant === 'section') {
+    const divider = 'border-t first:border-t-0'
+    const dividerColor = { borderColor: 'var(--border-hairline)' }
+
+    // Empty, it's one quiet line: the pillar's name and a way to add to it.
+    // The whole line is the button, and a drop target.
+    if (!active) {
+      return (
+        <motion.button
+          ref={setNodeRef}
+          layout
+          transition={spring.gentle}
+          type="button"
+          onClick={() => onAdd(date, pillar.id)}
+          aria-label={addLabel}
+          className={cn(
+            'group/pillar flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left',
+            divider,
+            'transition-colors duration-150 hover:bg-blue-50/70 active:bg-blue-50',
+            // Inset, so the card's rounded edge doesn't clip it.
+            'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-700',
+            isOver && 'bg-blue-50 ring-2 ring-inset ring-blue-400/60',
+          )}
+          style={dividerColor}
+        >
+          <span className="label-mono truncate text-[12px] text-slate-600">{pillar.name}</span>
+          <span
+            aria-hidden="true"
+            className="grid size-6 shrink-0 place-items-center rounded-full text-[17px] leading-none text-slate-500"
+          >
+            +
+          </span>
+        </motion.button>
+      )
+    }
+
+    return (
+      <motion.div
+        ref={setNodeRef}
+        layout
+        transition={spring.gentle}
+        className={cn(
+          'px-4 pb-2.5 pt-3.5 transition-colors duration-150',
+          divider,
+          isOver && 'bg-blue-50 ring-2 ring-inset ring-blue-400/60',
+        )}
+        style={dividerColor}
+      >
+        <header className="flex items-center justify-between gap-2">
+          <h3 className="label-mono truncate text-[12px] text-blue-800">{pillar.name}</h3>
+          <button
+            type="button"
+            onClick={() => onAdd(date, pillar.id)}
+            aria-label={addLabel}
+            className={cn(
+              'grid size-8 -my-2 -mr-2 shrink-0 place-items-center rounded-full text-[17px] leading-none text-blue-700',
+              'transition-colors duration-150 hover:bg-blue-700 hover:text-white',
+              'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-blue-700',
+            )}
+          >
+            +
+          </button>
+        </header>
+
+        {/* Pulled out by the row's own padding, so each checkbox lines up
+            under the pillar's name. */}
+        <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+          <div className="-mx-1.5 mt-1.5">
+            {tasks.map((task) => (
+              <TaskRow key={task.id} task={task} onToggle={onToggle} onOpen={onOpen} />
+            ))}
+          </div>
+        </SortableContext>
+      </motion.div>
+    )
+  }
+
   // An empty pillar is the natural place to click to add work, so the whole
   // block is the target rather than a hover-only "+".
   if (!active) {
@@ -61,7 +146,7 @@ export const PillarBlock = memo(function PillarBlock({
         transition={spring.gentle}
         type="button"
         onClick={() => onAdd(date, pillar.id)}
-        aria-label={`Add a task to ${pillar.name}, ${spoken}`}
+        aria-label={addLabel}
         className={cn(
           'group/pillar flex w-full items-center justify-between gap-2 rounded-pillar',
           'border border-dashed px-2.5 py-3 text-left md:py-1.5',
@@ -114,7 +199,7 @@ export const PillarBlock = memo(function PillarBlock({
         <button
           type="button"
           onClick={() => onAdd(date, pillar.id)}
-          aria-label={`Add a task to ${pillar.name}, ${spoken}`}
+          aria-label={addLabel}
           // Finger-sized on a phone, 24px (WCAG's minimum target) from md
           // up; the negative margins keep the header's height from growing.
           className={cn(

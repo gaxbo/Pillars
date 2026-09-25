@@ -5,19 +5,51 @@ import { SEGMENT_COUNT } from './useOnboardingStore'
 /**
  * The segmented bar from the onboarding screens: five rounded segments, filled
  * blue up to the current step, grey after.
+ *
+ * `onBack` puts a back arrow before the step's name, top left, where people
+ * look for it. Each step's own "Go back" sits at the foot of the page, easy to
+ * miss when you only want to fix an earlier answer.
  */
 export function StepProgress({
   label,
   segment,
+  onBack,
 }: {
   label: string
   segment: number
+  onBack?: () => void
 }) {
   return (
     <div className="px-6 pt-8 sm:px-12">
-      <p key={label} className="label-mono animate-fade-in pb-2 text-[12px] text-slate-600">
-        {label}
-      </p>
+      <div className="flex items-center gap-3 pb-2">
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            aria-label="Back to the previous step"
+            className={cn(
+              'grid size-8 shrink-0 place-items-center rounded-full border border-blue-300 text-blue-700',
+              'transition-colors duration-150 hover:border-blue-500 hover:bg-blue-100 hover:text-blue-900',
+              'active:bg-blue-200',
+              'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700',
+            )}
+          >
+            <svg viewBox="0 0 16 16" className="size-3.5" aria-hidden="true">
+              <path
+                d="M13 8H3.5M7.5 4 3.5 8l4 4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        )}
+        <p key={label} className="label-mono animate-fade-in text-[12px] text-slate-600">
+          {label}
+        </p>
+      </div>
       <div
         className="flex gap-1"
         role="progressbar"
@@ -31,8 +63,12 @@ export function StepProgress({
             key={i}
             style={{ transitionDelay: `${i * 45}ms` }}
             className={cn(
-              'h-[5px] flex-1 rounded-pill transition-colors duration-300',
-              i <= segment ? 'bg-blue-400' : 'bg-slate-200',
+              'h-[5px] flex-1 rounded-pill transition-[background-color,box-shadow] duration-300',
+              // Only the filled part casts a shadow, tinted with its own blue,
+              // so it sits above the grey track rather than printed on it.
+              i <= segment
+                ? 'bg-blue-400 shadow-[0_1px_2px_rgba(30,69,96,0.2),0_2px_6px_rgba(77,158,212,0.45)]'
+                : 'bg-slate-200',
             )}
           />
         ))}

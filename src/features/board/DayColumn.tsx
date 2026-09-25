@@ -15,6 +15,11 @@ interface DayColumnProps {
   onToggle: (id: string) => void
   onOpen: (id: string) => void
   onAdd: (date: IsoDate, pillarId: string) => void
+  /**
+   * `lane`: a column in the week grid. `list`: a phone's one day, as a
+   * heading over a single card of pillar sections.
+   */
+  variant?: 'lane' | 'list'
   className?: string
 }
 
@@ -37,10 +42,76 @@ export const DayColumn = memo(function DayColumn({
   onToggle,
   onOpen,
   onAdd,
+  variant = 'lane',
   className,
 }: DayColumnProps) {
   const today = isToday(date)
   const past = isPast(date)
+
+  /**
+   * On a phone the lane's nesting read as clutter: a card for the day, a card
+   * for every pillar inside it, and a date the strip above already shows.
+   * Here the day is a heading, and its pillars are sections of one card,
+   * split by hairlines. The card ends with its content rather than running
+   * to the bottom of the screen.
+   */
+  if (variant === 'list') {
+    return (
+      <section
+        aria-labelledby={`day-${iso}`}
+        aria-current={today ? 'date' : undefined}
+        className={className}
+      >
+        <header className="mb-3 flex items-end justify-between gap-3 px-1">
+          <div>
+            {today && (
+              <p aria-hidden="true" className="label-mono mb-1 text-[12px] text-blue-800">
+                Today
+              </p>
+            )}
+            <h2
+              id={`day-${iso}`}
+              className={cn(
+                'text-[21px] font-semibold leading-tight tracking-[-0.01em]',
+                today ? 'text-blue-800' : past ? 'text-slate-700' : 'text-slate-900',
+              )}
+            >
+              {fullDayName(date)} {dayDateLabel(date)}
+              {today && <span className="sr-only-text">, today</span>}
+            </h2>
+          </div>
+          {dayStats && dayStats.total > 0 && (
+            <p className="label-mono pb-0.5 text-[12px] tabular-nums text-slate-600">
+              <span aria-hidden="true">
+                {dayStats.done}/{dayStats.total} done
+              </span>
+              <span className="sr-only-text">
+                {dayStats.done} of {dayStats.total} tasks done
+              </span>
+            </p>
+          )}
+        </header>
+
+        <div
+          className="overflow-hidden rounded-column border border-white/80 shadow-[var(--shadow-raised)]"
+          style={{ background: 'var(--gradient-surface-soft)' }}
+        >
+          {pillars.map((pillar) => (
+            <PillarBlock
+              key={pillar.id}
+              pillar={pillar}
+              date={iso}
+              tasks={byCell.get(cellId(iso, pillar.id)) ?? EMPTY}
+              onToggle={onToggle}
+              onOpen={onOpen}
+              onAdd={onAdd}
+              variant="section"
+            />
+          ))}
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section

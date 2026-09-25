@@ -15,6 +15,39 @@ import { useOnboardingStore } from '../useOnboardingStore'
 /** The design's advice, enforced only as a nudge. */
 const COMFORTABLE_MAX = 5
 
+/**
+ * Each name is a visible field, with a pencil, rather than text that turns
+ * editable when clicked: nothing hinted at that, least of all on a phone,
+ * where there's no hover to give it away.
+ */
+const nameField = cn(
+  'peer w-full rounded-pill border border-slate-300 bg-white/85 py-2.5 pl-5 pr-11',
+  'text-[16px] font-semibold text-slate-900 placeholder:font-normal placeholder:text-slate-500',
+  'shadow-[var(--shadow-rest)] outline-none transition-colors duration-150 hover:border-blue-400',
+  'focus-visible:border-blue-600 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-blue-600/30',
+)
+
+function Pencil() {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      aria-hidden="true"
+      className={cn(
+        'pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-slate-500',
+        'transition-opacity duration-150 peer-focus-visible:opacity-0',
+      )}
+    >
+      <path
+        d="M10.8 2.7a1.6 1.6 0 0 1 2.3 2.3L5.6 12.5l-3 .8.8-3z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 export function PillarsStep() {
   const pillars = useOnboardingStore((s) => s.pillars)
   const rename = useOnboardingStore((s) => s.renamePillar)
@@ -37,8 +70,8 @@ export function PillarsStep() {
   return (
     <StepBody>
       <StepHeading title="Build your Pillars">
-        These become the headers under every day. Edit the words until they
-        sound like you, remove what isn&apos;t yours. 5 or fewer works best.
+        These become the headers under every day. Rename them until they sound
+        like you, and remove what isn&apos;t yours. Five or fewer works best.
       </StepHeading>
 
       {pillars.length === 0 && !adding && (
@@ -49,25 +82,20 @@ export function PillarsStep() {
         </p>
       )}
 
-      <ul>
+      <ul className="space-y-3">
         {pillars.map((pillar) => (
-          <li
-            key={pillar.id}
-            className="flex items-center gap-3 border-b py-2"
-            style={{ borderColor: 'var(--border-hairline)' }}
-          >
-            <input
-              value={pillar.name}
-              maxLength={MAX_LENGTH.pillarName}
-              onChange={(e) => rename(pillar.id, e.target.value)}
-              aria-label="Pillar name"
-              className={cn(
-                'flex-1 bg-transparent py-1.5 text-[17px] font-semibold text-slate-900',
-                'outline-none placeholder:font-normal placeholder:text-slate-500',
-                '-mx-2 rounded-md px-2 focus-visible:bg-white focus-visible:text-blue-800 focus-visible:ring-2 focus-visible:ring-blue-600/40',
-              )}
-              placeholder="Name this pillar"
-            />
+          <li key={pillar.id} className="flex items-center gap-2">
+            <span className="relative flex-1">
+              <input
+                value={pillar.name}
+                maxLength={MAX_LENGTH.pillarName}
+                onChange={(e) => rename(pillar.id, e.target.value)}
+                aria-label="Pillar name"
+                className={nameField}
+                placeholder="Name this pillar"
+              />
+              <Pencil />
+            </span>
             <button
               type="button"
               onClick={() => remove(pillar.id)}
@@ -93,10 +121,8 @@ export function PillarsStep() {
       </ul>
 
       {adding ? (
-        <div
-          className="flex items-center gap-3 border-b py-2"
-          style={{ borderColor: 'var(--border-hairline)' }}
-        >
+        // The remove button's width, so the new field lines up with the rest.
+        <div className="relative mt-3 mr-9">
           <input
             autoFocus
             value={draft}
@@ -112,8 +138,9 @@ export function PillarsStep() {
             onBlur={commitNew}
             placeholder="Name this pillar"
             aria-label="New pillar name"
-            className="-mx-2 flex-1 rounded-md bg-transparent px-2 py-1.5 text-[17px] font-semibold text-slate-900 outline-none placeholder:font-normal placeholder:text-slate-500 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-blue-600/40"
+            className={nameField}
           />
+          <Pencil />
         </div>
       ) : (
         <div className="pt-4">

@@ -42,10 +42,9 @@ export function GoalEditor({
           className="border-b py-6 first:pt-0"
           style={{ borderColor: 'var(--border-hairline)' }}
         >
-          <span
-            className="inline-block rounded-md px-2.5 py-1 text-[14px] font-medium text-slate-800"
-            style={{ background: 'var(--surface-column-hover)' }}
-          >
+          {/* Solid, with an edge: the translucent fill it had all but vanished
+              where the page gradient is palest, at the top. */}
+          <span className="inline-block rounded-md border border-blue-200 bg-white px-2.5 py-1 text-[14px] font-medium text-blue-900 shadow-[var(--shadow-rest)]">
             {pillar.name || 'Untitled pillar'}
           </span>
 

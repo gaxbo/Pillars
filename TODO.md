@@ -6,7 +6,7 @@
       Until `0003` runs, the landing page's form shows "Something went wrong"
       for every address. `0004` is the database half of the Security section
       below; if it stops on a constraint, an existing row already breaks that
-      rule and the error names it. `0006` waits for CAPTCHA (Security).
+      rule and the error names it. `0007` waits for CAPTCHA (Security).
 - [ ] **Set the early access password** once `0005` is in, or nobody can
       make an account: `insert into private.early_access (code) values
       ('…') on conflict (id) do update set code = excluded.code;` The same
@@ -77,7 +77,7 @@ what's left is mostly dashboard settings.
       so instead of hanging, and forms don't move while it's idle.
 - [x] **The waitlist behind Turnstile** (2026-09-24). With CAPTCHA on, the
       form goes through the `join-waitlist` Edge Function, which checks the
-      token with Cloudflare first, and `0006` closes the direct route.
+      token with Cloudflare first, and `0007` closes the direct route.
 - [ ] **Turn CAPTCHA on, after deploying** (Cloudflare needs the sites'
       addresses). In this order, or sign-in or the waitlist breaks midway:
       1. Cloudflare (free account) → Turnstile → Add widget: both sites'
@@ -89,13 +89,20 @@ what's left is mostly dashboard settings.
       3. Vercel: `VITE_TURNSTILE_SITE_KEY` on both projects, then redeploy.
       4. Supabase → Authentication → Attack Protection → CAPTCHA on,
          Turnstile, the secret key.
-      5. Run `0006`. Then try a sign-in and a waitlist sign-up.
+      5. Run `0007`. Then try a sign-in and a waitlist sign-up.
 
       Until then a script can make the Gmail account send confirmation mail
       to anyone. Also keep `{{ .Data.full_name }}` out of the email
       templates: `0004` caps the name only when an account is created.
-- [ ] **Run the Security Advisor** (Advisors → Security Advisor) once `0003`
-      to `0005` are in. It checks the live database, which the repo can't.
+- [x] **Ran the Security Advisor** (2026-09-25). Its function warnings are
+      fixed by `0006`: the sign-up trigger, Supabase's `rls_auto_enable`
+      helper and signed-in users' access to `join_waitlist()` no longer show
+      up in the API.
+- [ ] **Run `0006_function_grants.sql`**, then re-run the advisor. Three
+      entries stay, on purpose: `join_waitlist()` callable by anon (the
+      landing's form needs it until `0007`), `waitlist` with RLS on and no
+      policies (that's what keeps the list unreadable), and leaked password
+      protection (paid plan).
 
 The CSP allows network calls to `https://*.supabase.co` and nothing else,
 plus Cloudflare's Turnstile script and frame. Realtime would need

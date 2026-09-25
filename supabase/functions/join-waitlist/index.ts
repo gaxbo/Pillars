@@ -1,7 +1,7 @@
 // The waitlist's front door once CAPTCHA is on.
 //
 // Checks the form's Turnstile token with Cloudflare, then adds the address
-// through join_waitlist() (migration 0003). Migration 0006 then takes that
+// through join_waitlist() (migration 0003). Migration 0007 then takes that
 // function away from the public API, so bots can't skip the check by
 // calling it directly.
 //

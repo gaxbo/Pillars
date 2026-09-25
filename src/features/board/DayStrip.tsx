@@ -22,6 +22,10 @@ interface DayStripProps {
  * a row to switch between. Seven stacked full-width columns made the week a
  * scroll longer than two screens, with today somewhere in the middle of it.
  *
+ * Its own floating card, not a band under the header: as a full-width strip
+ * it ran into the header above and the day below, and the page read as one
+ * crowded block.
+ *
  * Sticky, because every day is also a drop target — a task dragged down a
  * long day still needs somewhere to go.
  */
@@ -34,31 +38,30 @@ export function DayStrip({
   onNext,
 }: DayStripProps) {
   return (
-    <nav
-      aria-label="Days this week"
-      className="sticky top-0 z-30 flex items-center gap-1 border-b px-4 py-2 sm:px-6"
-      style={{
-        background: 'var(--surface-strip)',
-        borderColor: 'var(--border-hairline)',
-      }}
-    >
-      <ChevronButton direction="prev" onClick={onPrev} />
-      <div className="grid flex-1 grid-cols-7">
-        {days.map((date) => {
-          const iso = toIso(date)
-          return (
-            <DayChip
-              key={iso}
-              date={date}
-              iso={iso}
-              selected={iso === selected}
-              stats={byDay.get(iso)}
-              onSelect={onSelect}
-            />
-          )
-        })}
+    <nav aria-label="Days this week" className="sticky top-0 z-30 px-4 pb-1 pt-2 sm:px-6">
+      <div
+        className="flex items-center gap-0.5 rounded-column border border-white/80 p-1 shadow-[var(--shadow-raised)]"
+        style={{ background: 'var(--surface-strip)' }}
+      >
+        {/* Borderless inside the card: the seven days are the content here. */}
+        <ChevronButton direction="prev" onClick={onPrev} className="border-transparent" />
+        <div className="grid flex-1 grid-cols-7">
+          {days.map((date) => {
+            const iso = toIso(date)
+            return (
+              <DayChip
+                key={iso}
+                date={date}
+                iso={iso}
+                selected={iso === selected}
+                stats={byDay.get(iso)}
+                onSelect={onSelect}
+              />
+            )
+          })}
+        </div>
+        <ChevronButton direction="next" onClick={onNext} className="border-transparent" />
       </div>
-      <ChevronButton direction="next" onClick={onNext} />
     </nav>
   )
 }

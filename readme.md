@@ -27,8 +27,8 @@ npm run dev
 The app runs on sample data with no setup. To use real accounts:
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. Run `supabase/migrations/0001` through `0005` in the SQL editor, in
-   order. Leave `0006` until CAPTCHA is on (TODO.md, Security).
+2. Run `supabase/migrations/0001` through `0006` in the SQL editor, in
+   order. Leave `0007` until CAPTCHA is on (TODO.md, Security).
 3. Set the early access password, which new accounts need (`0005`):
    `insert into private.early_access (code) values ('…')`. The file's header
    has the line for changing it, and for opening sign-up to everyone.
